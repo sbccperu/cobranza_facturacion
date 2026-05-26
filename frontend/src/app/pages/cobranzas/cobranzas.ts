@@ -589,8 +589,8 @@ export class CobranzasComponent implements OnInit {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text("Servicios de Facturación Electrónica y Soluciones de Ingeniería", 14, 21);
-    doc.text("SBCC Engineers Solutions S.A.C - RUC: 20613233387", 14, 26);
-    doc.text("Contacto / Soporte: +51 994 908 135", 14, 31);
+    doc.text("SBCC Engineers Solutions S.A.C - RUC: 20565764366", 14, 26);
+    doc.text("Contacto / Soporte: +51 915 137 567 / 915 124 485", 14, 31);
     
     // --- TÍTULO DEL DOCUMENTO ---
     doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
