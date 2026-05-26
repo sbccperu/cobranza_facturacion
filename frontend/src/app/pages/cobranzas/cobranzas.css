@@ -30,3 +30,45 @@ input[type="number"] {
     -moz-appearance: textfield;
     appearance: textfield;
 }
+
+/* Estilos para la previsualización del recibo (tipo hoja A4) */
+.style-document-preview {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.style-document-preview table {
+    border-collapse: collapse;
+}
+
+.style-document-preview table th {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.style-document-preview table td {
+    padding: 6px 10px;
+}
+
+/* Modificar nav-pills de vista previa del PDF */
+.nav-pills .nav-link {
+    border-radius: 20px;
+    padding: 8px 16px;
+    color: #495057;
+    background-color: #e9ecef;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #2980b9;
+    color: white;
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+    background-color: #dee2e6;
+}
+

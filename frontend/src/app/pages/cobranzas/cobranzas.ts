@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OperacionesService } from '../../services/operaciones.service';
 import { ClientesService } from '../../services/clientes.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -22,9 +23,18 @@ export class CobranzasComponent implements OnInit {
   vistaActual: 'activas' | 'inactivas' = 'activas';
   
   mostrarModalPdf = false;
+  tabActivo: 'recibo' | 'pdf' = 'recibo';
   itemsGrupoPdf: any[] = [];
+  pdfSafeUrl: SafeResourceUrl | null = null;
+  pdfBlobUrl: string | null = null;
+  lastPdfDoc: jsPDF | null = null;
+  lastPdfName = '';
 
-  constructor(private operacionesService: OperacionesService, private clientesService: ClientesService) { }
+  constructor(
+    private operacionesService: OperacionesService,
+    private clientesService: ClientesService,
+    private sanitizer: DomSanitizer
+  ) { }
 
   ngOnInit(): void {
     this.cargarCobranzas();
@@ -572,9 +582,7 @@ export class CobranzasComponent implements OnInit {
     return `Del 15 de ${mesAnterior} de ${anioAnterior} al 15 de ${mesActual} de ${anioStr}`;
   }
 
-  generarPdfGrupo(items: any[], telefono: string, periodo: string) {
-    if (!items || items.length === 0) return;
-    
+  construirPdfGrupo(items: any[], telefono: string, periodo: string): { doc: jsPDF, nombreArchivo: string } {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     
     const azulSBCC: [number, number, number] = [41, 128, 185];
@@ -740,6 +748,11 @@ export class CobranzasComponent implements OnInit {
     doc.text("Por favor, realice el pago dentro del período indicado para evitar suspensiones de servicio.", 14, finalY + 64);
     
     const nombreArchivo = `Detalle_Facturacion_${nombresClientes.replace(/[\s\/\\:*?"<>|]+/g, '_')}_Periodo_${periodo.replace(/[\s\/\\:*?"<>|]+/g, '_')}.pdf`;
+    return { doc, nombreArchivo };
+  }
+
+  generarPdfGrupo(items: any[], telefono: string, periodo: string) {
+    const { doc, nombreArchivo } = this.construirPdfGrupo(items, telefono, periodo);
     doc.save(nombreArchivo);
   }
 
@@ -747,6 +760,31 @@ export class CobranzasComponent implements OnInit {
     const groupKey = this.getGroupKey(cobranza);
     this.itemsGrupoPdf = this.cobranzasActivas.filter(c => this.getGroupKey(c) === groupKey);
     this.mostrarModalPdf = true;
+    this.cargarVistaPreviaPdf();
+  }
+
+  cargarVistaPreviaPdf() {
+    if (this.itemsGrupoPdf.length === 0) return;
+    
+    // Revocar URL vieja para liberar memoria
+    if (this.pdfBlobUrl) {
+      URL.revokeObjectURL(this.pdfBlobUrl);
+      this.pdfBlobUrl = null;
+      this.pdfSafeUrl = null;
+    }
+    
+    const firstItem = this.itemsGrupoPdf[0];
+    const tel = firstItem.telefonos || 'Sin Registrar';
+    const per = firstItem.nombre_periodo || 'Actual';
+    
+    const { doc, nombreArchivo } = this.construirPdfGrupo(this.itemsGrupoPdf, tel, per);
+    this.lastPdfDoc = doc;
+    this.lastPdfName = nombreArchivo;
+    
+    // Convertir el PDF a Blob e inyectar al iframe
+    const blob = doc.output('blob');
+    this.pdfBlobUrl = URL.createObjectURL(blob);
+    this.pdfSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.pdfBlobUrl);
   }
 
   descargarPdfGrupoDirecto(cobranza: any) {
@@ -757,12 +795,13 @@ export class CobranzasComponent implements OnInit {
     if (this.itemsGrupo.length === 0) return;
     this.itemsGrupoPdf = [...this.itemsGrupo];
     this.mostrarModalPdf = true;
+    this.cargarVistaPreviaPdf();
   }
 
   descargarPdfDesdeModalPreview() {
-    if (this.itemsGrupoPdf.length === 0) return;
-    const firstItem = this.itemsGrupoPdf[0];
-    this.generarPdfGrupo(this.itemsGrupoPdf, firstItem.telefonos || 'Sin Registrar', firstItem.nombre_periodo || 'Actual');
+    if (this.lastPdfDoc && this.lastPdfName) {
+      this.lastPdfDoc.save(this.lastPdfName);
+    }
     this.cerrarModalPdf();
   }
 
@@ -770,9 +809,57 @@ export class CobranzasComponent implements OnInit {
     return this.itemsGrupoPdf.reduce((sum, i) => sum + (parseFloat(i.monto_total) || 0), 0);
   }
 
+  get nombresClientesPdf(): string {
+    return Array.from(new Set(this.itemsGrupoPdf.map(i => i.nombre_cliente))).join(' / ');
+  }
+
+  get rucsClientesPdf(): string {
+    return Array.from(new Set(this.itemsGrupoPdf.map(i => i.rucs))).join(' / ');
+  }
+
+  get telefonoPdf(): string {
+    if (this.itemsGrupoPdf.length === 0) return '';
+    return this.itemsGrupoPdf[0].telefonos || 'Sin Registrar';
+  }
+
+  get periodoPdf(): string {
+    if (this.itemsGrupoPdf.length === 0) return '';
+    return this.itemsGrupoPdf[0].nombre_periodo || 'Actual';
+  }
+
+  get cicloConsumosPdf(): string {
+    return this.obtenerRangoFechas(this.periodoPdf);
+  }
+
+  getPlanBase(comprobantes: any): number {
+    const docs = parseInt(comprobantes, 10) || 0;
+    return docs > 0 ? 55.00 : 0.00;
+  }
+
+  getExcesoDocs(comprobantes: any): number {
+    const docs = parseInt(comprobantes, 10) || 0;
+    return docs > 500 ? (docs - 500) : 0;
+  }
+
+  getCostoExceso(comprobantes: any): number {
+    return this.getExcesoDocs(comprobantes) * 0.025;
+  }
+
+  parseFloat(val: any): number {
+    return parseFloat(val) || 0;
+  }
+
   cerrarModalPdf() {
     this.mostrarModalPdf = false;
+    this.tabActivo = 'recibo';
     this.itemsGrupoPdf = [];
+    this.lastPdfDoc = null;
+    this.lastPdfName = '';
+    if (this.pdfBlobUrl) {
+      URL.revokeObjectURL(this.pdfBlobUrl);
+      this.pdfBlobUrl = null;
+      this.pdfSafeUrl = null;
+    }
   }
 }
 

@@ -293,53 +293,168 @@
 
 <!-- Modal para Confirmación y Vista Previa de Descarga de PDF -->
 <div class="modal fade" [class.show]="mostrarModalPdf" [style.display]="mostrarModalPdf ? 'block' : 'none'" tabindex="-1"
-    style="background: rgba(0,0,0,0.5);">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
+    style="background: rgba(0,0,0,0.5); z-index: 1060;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="min-height: 600px;">
             <div class="modal-header bg-danger text-white py-3">
                 <h5 class="modal-title d-flex align-items-center gap-2">
                     <i class="bi bi-file-earmark-pdf-fill fs-4"></i>
-                    Confirmar Descarga de PDF - Detalle
+                    Detalle y Descarga de PDF de Cobranza
                 </h5>
                 <button type="button" class="btn-close btn-close-white" (click)="cerrarModalPdf()"></button>
             </div>
-            <div class="modal-body p-4 bg-light">
+            <div class="modal-body p-3 bg-light d-flex flex-column" style="max-height: 75vh; overflow-y: auto;">
                 <div class="text-center mb-3">
-                    <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 4rem;"></i>
-                    <h6 class="mt-2 fw-bold text-dark">¿Deseas descargar el desglose de facturación para este cliente?</h6>
-                    <p class="text-muted small">El PDF detallará de manera formal el cobro del periodo.</p>
+                    <h6 class="fw-bold text-dark mb-1">Vista Previa del Detalle de Facturación</h6>
+                    <p class="text-muted small mb-0">Revisa el recibo de consumo antes de descargarlo.</p>
                 </div>
 
-                <div class="card p-3 shadow-sm border-0 bg-white mb-2" *ngIf="itemsGrupoPdf.length > 0">
-                    <div class="mb-2">
-                        <span class="text-muted small">Cliente / Empresa:</span>
-                        <div class="fw-bold text-dark">{{ itemsGrupoPdf[0].nombre_cliente }}</div>
-                    </div>
-                    <div class="mb-2" *ngIf="itemsGrupoPdf.length > 1">
-                        <span class="text-muted small">Razones Sociales Vinculadas:</span>
-                        <div class="fw-bold text-dark" style="font-size: 0.8rem;">
-                            <span *ngFor="let item of itemsGrupoPdf; let last = last">
-                                {{ item.nombre_cliente }} (RUC: {{ item.rucs }}){{ !last ? ' / ' : '' }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-6 mb-2">
-                            <span class="text-muted small">Periodo:</span>
-                            <div class="fw-bold text-dark">{{ itemsGrupoPdf[0].nombre_periodo || 'Actual' }}</div>
-                        </div>
-                        <div class="col-6 mb-2 text-end">
-                            <span class="text-muted small">Total a Cobrar:</span>
-                            <div class="fw-bold text-success fs-5">
-                                S/ {{ sumaGrupoPdfModal | number:'1.0-0' }}
+                <!-- Tabs de Navegación -->
+                <ul class="nav nav-pills mb-3 justify-content-center gap-2" id="pdfPreviewTabs">
+                    <li class="nav-item">
+                        <button class="nav-link btn fw-bold" [class.active]="tabActivo === 'recibo'" (click)="tabActivo = 'recibo'">
+                            <i class="bi bi-file-earmark-text-fill me-1"></i> Recibo Digital
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link btn fw-bold" [class.active]="tabActivo === 'pdf'" (click)="tabActivo = 'pdf'">
+                            <i class="bi bi-file-pdf-fill me-1"></i> Vista de Impresión (PDF)
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Contenido de las Pestañas -->
+                <div class="flex-grow-1 d-flex flex-column">
+                    <!-- Tab 1: Recibo Digital (HTML) -->
+                    <div *ngIf="tabActivo === 'recibo'" class="bg-white border rounded shadow-sm p-4 mx-auto style-document-preview w-100" style="max-width: 760px;">
+                        <!-- CABECERA (Azul SBCC) -->
+                        <div class="p-3 text-white rounded-top d-flex justify-content-between align-items-start" style="background-color: #2980b9; margin: -24px -24px 20px -24px;">
+                            <div>
+                                <h4 class="mb-1 fw-bold text-white">SBCC PERÚ</h4>
+                                <p class="mb-0 small" style="opacity: 0.9;">Servicios de Facturación Electrónica y Soluciones de Ingeniería</p>
+                                <p class="mb-0 small" style="opacity: 0.9;">SBCC Engineers Solutions S.A.C - RUC: 20565764366</p>
+                                <p class="mb-0 small" style="opacity: 0.9;">Contacto / Soporte: +51 915 137 567 / 915 124 485</p>
                             </div>
+                        </div>
+
+                        <!-- TÍTULO DEL DOCUMENTO -->
+                        <div class="mb-3">
+                            <h5 class="fw-bold text-dark mb-1">DETALLE DE CONSUMO Y COBRANZA</h5>
+                            <hr style="border-top: 2.5px solid #2980b9; margin-top: 5px; opacity: 1;">
+                        </div>
+
+                        <!-- METADATOS DEL CLIENTE -->
+                        <div class="row mb-3" style="font-size: 0.9rem; line-height: 1.6;">
+                            <div class="col-md-12">
+                                <div class="row mb-1">
+                                    <div class="col-4 col-sm-3 fw-bold text-secondary">Cliente / R.S:</div>
+                                    <div class="col-8 col-sm-9 text-dark fw-semibold">{{ nombresClientesPdf }}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-4 col-sm-3 fw-bold text-secondary">RUC(s) Asociado(s):</div>
+                                    <div class="col-8 col-sm-9 text-dark font-monospace">{{ rucsClientesPdf }}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-4 col-sm-3 fw-bold text-secondary">Celular Contacto:</div>
+                                    <div class="col-8 col-sm-9 text-dark">{{ telefonoPdf }}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-4 col-sm-3 fw-bold text-secondary">Período:</div>
+                                    <div class="col-8 col-sm-9 text-dark fw-bold">{{ periodoPdf }}</div>
+                                </div>
+                                <div class="row mb-1">
+                                    <div class="col-4 col-sm-3 fw-bold text-secondary">Ciclo Consumos:</div>
+                                    <div class="col-8 col-sm-9 text-primary fw-semibold">{{ cicloConsumosPdf }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TABLA DETALLADA -->
+                        <div class="table-responsive mb-3">
+                            <table class="table table-striped table-bordered align-middle mb-0" style="font-size: 0.85rem;">
+                                <thead class="text-white text-center" style="background-color: #2980b9;">
+                                    <tr>
+                                        <th class="p-2" style="width: 18%;">RUC</th>
+                                        <th class="p-2" style="width: 32%;">Razón Social</th>
+                                        <th class="p-2" style="width: 12%;">Docs</th>
+                                        <th class="p-2" style="width: 12%;">Plan Base</th>
+                                        <th class="p-2" style="width: 10%;">Exceso</th>
+                                        <th class="p-2" style="width: 10%;">Costo Exc.</th>
+                                        <th class="p-2" style="width: 12%;">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let item of itemsGrupoPdf" class="text-center">
+                                        <td class="font-monospace">{{ item.rucs || 'S/N' }}</td>
+                                        <td class="text-start text-truncate" style="max-width: 200px;">{{ item.nombre_cliente }}</td>
+                                        <td class="fw-bold">{{ item.total_comprobantes || 0 }}</td>
+                                        <td class="text-end">S/ {{ getPlanBase(item.total_comprobantes) | number:'1.2-2' }}</td>
+                                        <td>{{ getExcesoDocs(item.total_comprobantes) }}</td>
+                                        <td class="text-end">S/ {{ getCostoExceso(item.total_comprobantes) | number:'1.2-2' }}</td>
+                                        <td class="text-end fw-bold text-primary">S/ {{ parseFloat(item.monto_total) | number:'1.2-2' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- TOTAL A PAGAR -->
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="p-2 px-3 rounded d-flex align-items-center gap-3 bg-light border border-secondary border-opacity-25" style="min-width: 280px;">
+                                <span class="fw-bold text-secondary small">TOTAL NETO A PAGAR:</span>
+                                <span class="fw-bold text-success fs-5 ms-auto">S/ {{ sumaGrupoPdfModal | number:'1.2-2' }}</span>
+                            </div>
+                        </div>
+
+                        <!-- INFORMACIÓN DE PAGO -->
+                        <div class="p-3 border rounded mb-3 bg-light bg-gradient" style="font-size: 0.85rem;">
+                            <h6 class="fw-bold text-dark mb-2 border-bottom pb-1"><i class="bi bi-wallet2 me-1 text-primary"></i> INFORMACIÓN DE PAGO</h6>
+                            <div class="row text-muted">
+                                <div class="col-sm-6 mb-2">
+                                    <strong class="text-dark">Yape / Plin:</strong><br>
+                                    994 908 135 (Jose Cutti)
+                                </div>
+                                <div class="col-sm-6 mb-2">
+                                    <strong class="text-dark">Banco Interbank:</strong><br>
+                                    SBCC Engineers Solutions S.A.C
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong class="text-dark">Cuenta Soles:</strong><br>
+                                    200-3001725635
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong class="text-dark">CCI:</strong><br>
+                                    003-200-003001725635-32
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PIE DE PÁGINA -->
+                        <div class="text-muted small border-top pt-2" style="font-size: 0.75rem;">
+                            <p class="mb-1">* Este es un comprobante de consumo detallado emitido por SBCC Perú.</p>
+                            <p class="mb-0">* Por favor, realice el pago dentro del período indicado para evitar suspensiones de servicio.</p>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Documento PDF (Iframe) -->
+                    <div *ngIf="tabActivo === 'pdf'" class="flex-grow-1 d-flex flex-column">
+                        <!-- Iframe para Previsualizar PDF -->
+                        <div *ngIf="pdfSafeUrl" class="flex-grow-1 mb-2 border rounded shadow-sm bg-white" style="height: 520px; overflow: hidden;">
+                            <iframe [src]="pdfSafeUrl" width="100%" height="100%" style="border: none;"></iframe>
+                        </div>
+
+                        <!-- Spinner de Carga mientras se genera el PDF -->
+                        <div *ngIf="!pdfSafeUrl" class="text-center py-5 my-auto">
+                            <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="text-muted mt-3 fw-bold">Generando documento PDF...</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer bg-white py-3 border-top d-flex justify-content-between">
                 <button type="button" class="btn btn-outline-secondary px-4 fw-bold" (click)="cerrarModalPdf()">Cancelar</button>
-                <button type="button" class="btn btn-danger px-4 fw-bold shadow" (click)="descargarPdfDesdeModalPreview()">
+                <button type="button" class="btn btn-danger px-4 fw-bold shadow" (click)="descargarPdfDesdeModalPreview()" [disabled]="!pdfSafeUrl">
                     <i class="bi bi-file-earmark-pdf-fill me-1"></i> DESCARGAR PDF
                 </button>
             </div>
