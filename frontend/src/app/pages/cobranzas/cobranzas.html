@@ -148,12 +148,20 @@
                     <!-- Acciones: UNA SOLA CELDA POR GRUPO -->
                     <td *ngIf="cobranza.isFirstOfPageGroup" [attr.rowspan]="cobranza.pageGroupRows"
                         class="text-center align-middle" [ngClass]="cobranza.colorClass">
-                        <button
-                            class="btn btn-primary d-flex flex-column align-items-center justify-content-center gap-1 mx-auto shadow"
-                            style="min-width: 110px; padding: 10px;" (click)="abrirModalEdicionGrupo(cobranza)">
-                            <i class="bi bi-pencil-square fs-5"></i>
-                            <span class="small fw-bold">EDITAR COMPROBANTES</span>
-                        </button>
+                        <div class="d-flex flex-column gap-2 align-items-center">
+                            <button
+                                class="btn btn-primary d-flex flex-column align-items-center justify-content-center gap-1 mx-auto shadow-sm"
+                                style="min-width: 110px; padding: 8px;" (click)="abrirModalEdicionGrupo(cobranza)">
+                                <i class="bi bi-pencil-square fs-6"></i>
+                                <span class="small fw-bold" style="font-size: 0.75rem;">EDITAR</span>
+                            </button>
+                            <button
+                                class="btn btn-danger d-flex flex-column align-items-center justify-content-center gap-1 mx-auto shadow-sm"
+                                style="min-width: 110px; padding: 8px;" (click)="descargarPdfGrupoDirecto(cobranza)">
+                                <i class="bi bi-file-earmark-pdf fs-6"></i>
+                                <span class="small fw-bold" style="font-size: 0.75rem;">PDF DETALLE</span>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 <tr *ngIf="cobranzasFiltradas.length === 0">
@@ -251,7 +259,11 @@
                         <span class="text-muted small">Total grupo:</span>
                         <span class="fw-bold text-success ms-2 fs-5">S/ {{sumaGrupoModal | number:'1.0-0'}}</span>
                     </div>
-                    <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button *ngIf="hayComprobantesEnGrupo" class="btn btn-outline-danger fw-bold shadow-sm px-3"
+                            (click)="descargarPdfGrupoDesdeModal()">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> PDF Detalle
+                        </button>
                         <span *ngIf="grupoYaPendiente" class="badge bg-success px-3 py-2 fs-6">
                             <i class="bi bi-check-circle-fill"></i> GRUPO PENDIENTE
                         </span>

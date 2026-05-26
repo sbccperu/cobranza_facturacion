@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OperacionesService } from '../../services/operaciones.service';
 import { ClientesService } from '../../services/clientes.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 @Component({
   selector: 'app-cobranzas',
@@ -539,4 +542,208 @@ export class CobranzasComponent implements OnInit {
       console.error('Error al copiar al portapapeles:', err);
     });
   }
+
+  obtenerRangoFechas(nombrePeriodo: string): string {
+    if (!nombrePeriodo) return 'Del 15 del mes anterior al 15 de este mes';
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    
+    const partes = nombrePeriodo.trim().split(/\s+/);
+    if (partes.length < 2) return `Del 15 del mes anterior al 15 de ${nombrePeriodo}`;
+    
+    const mesStr = partes[0].toLowerCase();
+    const anioStr = partes[1];
+    
+    const idx = meses.findIndex(m => m.toLowerCase() === mesStr);
+    if (idx === -1) return `Del 15 del mes anterior al 15 de ${nombrePeriodo}`;
+    
+    let idxAnterior = idx - 1;
+    let anioAnterior = parseInt(anioStr);
+    if (idxAnterior < 0) {
+      idxAnterior = 11;
+      anioAnterior -= 1;
+    }
+    
+    const mesAnterior = meses[idxAnterior];
+    const mesActual = meses[idx];
+    
+    return `Del 15 de ${mesAnterior} de ${anioAnterior} al 15 de ${mesActual} de ${anioStr}`;
+  }
+
+  generarPdfGrupo(items: any[], telefono: string, periodo: string) {
+    if (!items || items.length === 0) return;
+    
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    
+    const azulSBCC: [number, number, number] = [41, 128, 185];
+    const grisOscuro: [number, number, number] = [44, 62, 80];
+    
+    // --- CABECERA ---
+    doc.setFillColor(azulSBCC[0], azulSBCC[1], azulSBCC[2]);
+    doc.rect(0, 0, 210, 38, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("SBCC PERÚ", 14, 15);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Servicios de Facturación Electrónica y Soluciones de Ingeniería", 14, 21);
+    doc.text("SBCC Engineers Solutions S.A.C - RUC: 20613233387", 14, 26);
+    doc.text("Contacto / Soporte: +51 994 908 135", 14, 31);
+    
+    // --- TÍTULO DEL DOCUMENTO ---
+    doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("DETALLE DE CONSUMO Y COBRANZA", 14, 48);
+    
+    doc.setDrawColor(azulSBCC[0], azulSBCC[1], azulSBCC[2]);
+    doc.setLineWidth(0.8);
+    doc.line(14, 50, 196, 50);
+    
+    // --- METADATOS DEL CLIENTE ---
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    
+    const nombresClientes = Array.from(new Set(items.map(i => i.nombre_cliente))).join(' / ');
+    const rucsClientes = Array.from(new Set(items.map(i => i.rucs))).join(' / ');
+    const rangoFechas = this.obtenerRangoFechas(periodo);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Cliente / Razón Social:", 14, 58);
+    doc.setFont("helvetica", "normal");
+    doc.text(nombresClientes, 56, 58);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("RUC(s) Asociado(s):", 14, 64);
+    doc.setFont("helvetica", "normal");
+    doc.text(rucsClientes, 56, 64);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Celular de Contacto:", 14, 70);
+    doc.setFont("helvetica", "normal");
+    doc.text(telefono, 56, 70);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Período de Facturación:", 14, 76);
+    doc.setFont("helvetica", "normal");
+    doc.text(periodo, 56, 76);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Ciclo de Consumos:", 14, 82);
+    doc.setFont("helvetica", "normal");
+    doc.text(rangoFechas, 56, 82);
+    
+    // --- TABLA DETALLADA ---
+    const headers = [['RUC', 'Razón Social / RUC', 'Comprobantes', 'Plan Base (Hasta 500)', 'Excedente (Docs)', 'Costo Excedente', 'Subtotal']];
+    
+    const body = items.map(item => {
+      const docs = parseInt(item.total_comprobantes, 10) || 0;
+      const baseMonto = docs > 0 ? 55.00 : 0.00;
+      const excesoDocs = docs > 500 ? (docs - 500) : 0;
+      const costoExceso = excesoDocs * 0.025;
+      const totalFila = parseFloat(item.monto_total) || 0;
+      
+      return [
+        item.rucs || 'S/N',
+        item.nombre_cliente || '',
+        docs.toString(),
+        `S/ ${baseMonto.toFixed(2)}`,
+        excesoDocs.toString(),
+        `S/ ${costoExceso.toFixed(2)}`,
+        `S/ ${totalFila.toFixed(2)}`
+      ];
+    });
+    
+    autoTable(doc, {
+      startY: 90,
+      head: headers,
+      body: body,
+      theme: 'striped',
+      headStyles: { fillColor: azulSBCC, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+      bodyStyles: { fontSize: 9 },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 26 },
+        1: { halign: 'left', cellWidth: 50 },
+        2: { halign: 'center' },
+        3: { halign: 'right' },
+        4: { halign: 'center' },
+        5: { halign: 'right' },
+        6: { halign: 'right', fontStyle: 'bold' }
+      },
+      styles: { cellPadding: 2.5 }
+    });
+    
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    
+    // --- TOTAL A PAGAR ---
+    const sumaTotal = items.reduce((sum, item) => sum + (parseFloat(item.monto_total) || 0), 0);
+    doc.setFillColor(245, 247, 250);
+    doc.rect(120, finalY - 4, 76, 12, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+    doc.text("TOTAL NETO A PAGAR:", 123, finalY + 3);
+    doc.setTextColor(azulSBCC[0], azulSBCC[1], azulSBCC[2]);
+    doc.setFontSize(13);
+    doc.text(`S/ ${sumaTotal.toFixed(2)}`, 172, 3 + finalY);
+    
+    // --- MÉTODOS DE PAGO ---
+    doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("INFORMACIÓN DE PAGO:", 14, finalY + 20);
+    
+    doc.setDrawColor(220, 224, 230);
+    doc.setLineWidth(0.3);
+    doc.line(14, finalY + 22, 196, finalY + 22);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    
+    // Yape/Plin
+    doc.setFont("helvetica", "bold");
+    doc.text("Yape / Plin:", 14, finalY + 28);
+    doc.setFont("helvetica", "normal");
+    doc.text("994 908 135 (SBCC Perú / Jose Cutti)", 48, finalY + 28);
+    
+    // Cuenta Corriente Interbank
+    doc.setFont("helvetica", "bold");
+    doc.text("Banco Interbank:", 14, finalY + 34);
+    doc.setFont("helvetica", "normal");
+    doc.text("SBCC Engineers Solutions S.A.C", 48, finalY + 34);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Cuenta Soles:", 14, finalY + 40);
+    doc.setFont("helvetica", "normal");
+    doc.text("200-3001725635", 48, finalY + 40);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text("Código Interbancario (CCI):", 14, finalY + 46);
+    doc.setFont("helvetica", "normal");
+    doc.text("003-200-003001725635-32", 64, finalY + 46);
+    
+    // --- PIE DE PÁGINA ---
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(8);
+    doc.text("Este es un comprobante de consumo detallado emitido por SBCC Perú.", 14, finalY + 60);
+    doc.text("Por favor, realice el pago dentro del período indicado para evitar suspensiones de servicio.", 14, finalY + 64);
+    
+    const nombreArchivo = `Detalle_Facturacion_${nombresClientes.replace(/[\s\/\\:*?"<>|]+/g, '_')}_Periodo_${periodo.replace(/[\s\/\\:*?"<>|]+/g, '_')}.pdf`;
+    doc.save(nombreArchivo);
+  }
+
+  descargarPdfGrupoDirecto(cobranza: any) {
+    const groupKey = this.getGroupKey(cobranza);
+    const items = this.cobranzasActivas.filter(c => this.getGroupKey(c) === groupKey);
+    this.generarPdfGrupo(items, cobranza.telefonos || 'Sin Registrar', cobranza.nombre_periodo || 'Actual');
+  }
+
+  descargarPdfGrupoDesdeModal() {
+    if (this.itemsGrupo.length === 0) return;
+    const firstItem = this.itemsGrupo[0];
+    this.generarPdfGrupo(this.itemsGrupo, firstItem.telefonos || 'Sin Registrar', firstItem.nombre_periodo || 'Actual');
+  }
 }
+
