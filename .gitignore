@@ -1,0 +1,17 @@
+# Dependencias de Node y Angular (Para que no pese tanto)
+node_modules/
+
+# Archivos de entorno y seguridad
+.env
+
+# Archivos compilados
+dist/
+out-tsc/
+
+# Archivos de editores
+.vscode/
+.idea/
+
+# WhatsApp Web.js session (Seguridad)
+.wwebjs_auth/
+.wwebjs_cache/

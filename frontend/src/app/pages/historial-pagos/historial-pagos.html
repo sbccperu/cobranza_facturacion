@@ -1,0 +1,290 @@
+<!-- Vista principal: Historial de Pagos -->
+<div *ngIf="!mostrarPapeleraActual" class="historial-container mt-4 mx-auto" style="width: 98%;">
+
+    <div class="historial-split-layout">
+
+        <!-- SIDEBAR DE PERIODOS -->
+        <aside class="periodos-sidebar">
+            <h6 class="text-uppercase fw-bold text-muted small mb-3 px-2">Navegar Periodos</h6>
+
+            <!-- Item Mes Actual -->
+            <div class="period-nav-item" [class.active]="loteActivoId === null" (click)="seleccionarTab(null)">
+                <div class="period-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="period-info">
+                    <h6>Mes Actual</h6>
+                    <span>En curso...</span>
+                </div>
+            </div>
+
+            <hr class="my-3 opacity-10">
+            <h6 class="text-uppercase fw-bold text-muted small mb-2 px-2">Archivados / Cierres</h6>
+
+            <!-- Items de Lotes Archivados (Agrupados por Periodo) -->
+            <div *ngFor="let lote of lotesArchivados" class="period-nav-item"
+                [class.active]="loteActivoId === lote.id_periodo" (click)="seleccionarTab(lote.id_periodo)">
+                <div class="period-icon">
+                    <i class="bi bi-archive"></i>
+                </div>
+                <div class="period-info flex-grow-1">
+                    <h6>{{ lote.periodo || 'Reporte de Cierre' }}</h6>
+                </div>
+            </div>
+
+            <div *ngIf="lotesArchivados.length === 0" class="text-center py-3 text-muted small">
+                No hay cierres archivados.
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="historial-main-content">
+            <!-- HEADER con estilo Basurero Detallado -->
+            <div class="card shadow-sm mb-3 border-0 border-start border-5 border-danger p-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div>
+                        <h2 class="mb-1 fw-bold text-dark">
+                            <i class="bi bi-clock-history text-danger"></i>
+                            {{ loteActivoId === null ? 'Historial Mes Actual' : 'Cierre: ' + (obtenerNombreLoteActivo())
+                            }}
+                        </h2>
+                        <div class="d-flex align-items-center gap-3 mt-2">
+                            <!-- Buscador -->
+                            <div class="input-group" style="width: 300px;">
+                                <span class="input-group-text bg-white border-end-0 text-muted"><i
+                                        class="bi bi-search"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-1"
+                                    placeholder="Buscar en este periodo..." [(ngModel)]="terminoBusquedaHistorial">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Totales y acciones -->
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        <div class="d-flex gap-3 text-end mb-1">
+                            <div>
+                                <div class="text-muted small text-uppercase fw-semibold">Suma Total</div>
+                                <div class="text-danger fw-bold fs-5">S/ {{ totalMontoPagado | number:'1.0-0' }}</div>
+                            </div>
+                            <div>
+                                <div class="text-muted small text-uppercase fw-semibold">Registros</div>
+                                <div class="fw-bold fs-5 text-dark">{{ historialFiltrado.length }}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <!-- Mes Actual -->
+                            <button *ngIf="loteActivoId === null" class="btn btn-outline-danger btn-sm fw-semibold"
+                                (click)="vaciarHistorialMes()">
+                                <i class="bi bi-trash"></i> VACIAR HISTORIAL
+                            </button>
+                            <button *ngIf="loteActivoId === null" class="btn btn-success btn-sm fw-bold shadow-sm"
+                                (click)="archivarMesActual()">
+                                <i class="bi bi-archive-fill"></i> ARCHIVAR MES COMPLETO
+                            </button>
+
+                            <!-- Vista Archivada -->
+                            <button *ngIf="loteActivoId !== null" class="btn btn-outline-secondary btn-sm fw-semibold"
+                                (click)="generarPDF()">
+                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                            </button>
+                            <button *ngIf="loteActivoId !== null" class="btn btn-outline-danger btn-sm fw-semibold"
+                                (click)="enviarArchivoAPapelera()">
+                                <i class="bi bi-trash"></i> Enviar a Papelera
+                            </button>
+
+                            <!-- Vista Archivada (con Papelera) -->
+                            <button *ngIf="loteActivoId !== null" class="btn btn-outline-dark btn-sm fw-semibold"
+                                (click)="mostrarPapeleraActual = true">
+                                <i class="bi bi-trash3"></i> Papelera
+                                <span class="badge bg-dark ms-1">{{cantidadBasureroActivo}}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOADING -->
+            <div *ngIf="cargando" class="text-center py-5 bg-white rounded shadow-sm">
+                <div class="spinner-border text-danger" role="status"></div>
+                <p class="mt-2 text-muted">Cargando datos...</p>
+            </div>
+
+            <!-- TABLA PRINCIPAL -->
+            <div class="card shadow-sm" *ngIf="!cargando">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.83rem;">
+                        <thead
+                            style="background:#f8f8f8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;">
+                            <tr>
+                                <th class="py-3 ps-3 text-muted">#</th>
+                                <th class="text-muted">Periodo</th>
+                                <th class="text-muted">Cliente / Empresa</th>
+                                <th class="text-muted">RUC</th>
+                                <th class="text-muted">Celular</th>
+                                <th class="text-muted">Docs</th>
+                                <th class="text-muted">Monto</th>
+                                <th class="text-muted bg-success bg-opacity-75">Suma Grupo</th>
+                                <th class="text-muted">Método</th>
+                                <th class="text-muted">Fecha Pago</th>
+                                <th class="text-muted">Operador</th>
+                                <th class="text-muted text-center" *ngIf="loteActivoId === null">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let pago of historialFinal; let i = index">
+                                <td class="ps-3 text-muted small" [ngClass]="pago.colorClass">{{ i + 1 }}</td>
+                                <td [ngClass]="pago.colorClass">
+                                    <span class="badge bg-light text-dark border fw-semibold">{{ pago.periodo || '—'
+                                        }}</span>
+                                </td>
+                                <td class="fw-bold" [ngClass]="pago.colorClass">{{ pago.nombre_cliente }}</td>
+                                <td class="text-muted small font-monospace" [ngClass]="pago.colorClass">{{ pago.ruc || '—' }}</td>
+                                <td *ngIf="pago.isFirstOfGroup" [attr.rowspan]="pago.groupRows"
+                                    class="small font-monospace fw-bold align-middle text-center" [ngClass]="pago.colorClass">{{ pago.telefono || '—' }}</td>
+                                <td class="text-center text-muted small" [ngClass]="pago.colorClass">{{ pago.total_comprobantes || 0 }}</td>
+                                <td class="fw-bold text-success" [ngClass]="pago.colorClass">S/ {{ pago.monto_pagado | number:'1.0-0' }}</td>
+                                
+                                <td *ngIf="pago.isFirstOfGroup" [attr.rowspan]="pago.groupRows"
+                                    class="text-center align-middle group-cell-success fw-bold text-success fs-5 shadow-sm border"
+                                    [ngClass]="pago.colorClass">
+                                    S/ {{ pago.groupMonto | number:'1.0-0' }}
+                                </td>
+
+                                <td [ngClass]="pago.colorClass">
+                                    <span class="badge bg-info text-white">{{ pago.metodo || '—' }}</span>
+                                </td>
+                                <td class="small" [ngClass]="pago.colorClass">
+                                    <span class="d-block">{{ pago.fecha_pago | date:'dd/MM/yyyy' }}</span>
+                                    <span class="text-muted" style="font-size:0.72rem;">{{ pago.fecha_pago |
+                                        date:'HH:mm' }}</span>
+                                </td>
+                                <td class="text-muted small" [ngClass]="pago.colorClass">{{ pago.operador }}</td>
+                                <td class="text-center" [ngClass]="pago.colorClass" *ngIf="loteActivoId === null">
+                                    <button class="btn btn-danger btn-sm px-3 py-1 shadow-sm fw-bold" (click)="eliminarRegistro(pago.id_cobranza)">
+                                        <i class="bi bi-trash3 me-1"></i> Descartar
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="historialFinal.length === 0">
+                                <td [attr.colspan]="loteActivoId === null ? 12 : 11" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2 text-muted opacity-50"></i>
+                                    No hay pagos confirmados en el historial.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<div *ngIf="mostrarPapeleraActual" class="historial-container mt-4 mx-auto" style="width: 98%;">
+    <!-- Papelera -->
+    <div class="card shadow-sm mb-3 border-0 border-start border-5 border-dark p-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h2 class="mb-1 fw-bold text-dark">
+                    <i class="bi bi-trash3-fill text-dark me-2"></i> Papelera
+                </h2>
+                <small class="text-muted d-block">Registros descartados. Puedes restaurarlos al historial o eliminarlos
+                    permanentemente.</small>
+            </div>
+            <div>
+                <button *ngIf="seleccionadosPapelera.length > 0"
+                    class="btn btn-danger btn-sm fw-bold me-2 shadow-sm px-3 rounded-pill"
+                    (click)="destruirSeleccionadosPapelera()">
+                    <i class="bi bi-trash-fill me-1"></i> DESTRUIR SELECCIONADOS ({{ seleccionadosPapelera.length }})
+                </button>
+                <button class="btn btn-light btn-sm fw-bold border text-muted shadow-sm px-3 py-2 rounded-3"
+                    (click)="mostrarPapeleraActual = false">
+                    <i class="bi bi-arrow-left me-1"></i> VOLVER AL HISTORIAL
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Tabla de papelera -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.83rem;">
+                <thead
+                    style="background:#fcfcfc; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <tr>
+                        <th class="py-3 ps-3 text-muted border-0" style="width: 40px;">
+                            <input type="checkbox" class="form-check-input" [checked]="todosPapelera"
+                                (change)="toggleTodosPapelera()">
+                        </th>
+                        <th class="py-3 text-muted border-0">#</th>
+                        <th class="text-muted border-0">Periodo</th>
+                        <th class="text-muted border-0">Cliente / Empresa</th>
+                        <th class="text-muted border-0">RUC</th>
+                        <th class="text-muted border-0">Celular</th>
+                        <th class="text-muted border-0">Docs</th>
+                        <th class="text-muted border-0">Monto</th>
+                        <th class="text-muted border-0 bg-success bg-opacity-75">Suma Grupo</th>
+                        <th class="text-muted border-0">Método</th>
+                        <th class="text-muted border-0">Fecha Pago</th>
+                        <th class="text-muted border-0">Operador</th>
+                        <th class="text-muted text-center border-0">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of basureroAgrupado; let i = index"
+                        [class.table-light]="seleccionadosPapelera.includes(item.id_cobranza)">
+                        <td class="ps-3 border-0" [ngClass]="item.colorClass">
+                            <input type="checkbox" class="form-check-input"
+                                [checked]="seleccionadosPapelera.includes(item.id_cobranza)"
+                                (change)="toggleSeleccionPapelera(item.id_cobranza)">
+                        </td>
+                        <td class="text-muted small border-0" [ngClass]="item.colorClass">{{ i + 1 }}</td>
+                        <td class="border-0" [ngClass]="item.colorClass">
+                            <span class="badge bg-light text-dark border fw-semibold">{{ item.periodo || '—' }}</span>
+                        </td>
+                        <td class="fw-bold border-0" [ngClass]="item.colorClass">{{ item.nombre_cliente }}</td>
+                        <td class="text-muted small font-monospace border-0" [ngClass]="item.colorClass">{{ item.ruc || '—' }}</td>
+                        <td *ngIf="item.isFirstOfGroup" [attr.rowspan]="item.groupRows"
+                            class="small font-monospace border-0 fw-bold align-middle text-center" [ngClass]="item.colorClass">{{ item.telefono || '—' }}</td>
+                        <td class="text-center text-muted small border-0" [ngClass]="item.colorClass">{{ item.total_comprobantes || 0 }}</td>
+                        <td class="fw-bold text-danger border-0" [ngClass]="item.colorClass">S/ {{ item.monto_pagado | number:'1.0-0' }}</td>
+                        
+                        <td *ngIf="item.isFirstOfGroup" [attr.rowspan]="item.groupRows"
+                            class="text-center align-middle group-cell-success fw-bold text-success fs-5 border-0 bg-white shadow-sm border-start">
+                            S/ {{ item.groupMonto | number:'1.0-0' }}
+                        </td>
+
+                        <td class="border-0" [ngClass]="item.colorClass">
+                            <span class="badge bg-secondary text-white">{{ item.metodo || '—' }}</span>
+                        </td>
+                        <td class="small border-0" [ngClass]="item.colorClass">
+                            <span class="d-block">{{ item.fecha_pago | date:'dd/MM/yyyy' }}</span>
+                            <span class="text-muted" style="font-size:0.72rem;">{{ item.fecha_pago | date:'HH:mm'
+                                }}</span>
+                        </td>
+                        <td class="text-muted small border-0" [ngClass]="item.colorClass">{{ item.operador }}</td>
+                        <td class="text-center border-0" [ngClass]="item.colorClass">
+                            <div class="d-flex justify-content-center gap-1">
+                                <button
+                                    class="btn btn-sm btn-success shadow-sm px-2 py-1 d-flex align-items-center gap-1 rounded-pill"
+                                    (click)="restaurar(item.id_cobranza)" title="Restaurar al historial">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                    <span class="small fw-bold">RESTAURAR</span>
+                                </button>
+                                <button
+                                    class="btn btn-sm btn-danger shadow-sm px-2 py-1 d-flex align-items-center gap-1 rounded-pill"
+                                    (click)="eliminarRegistro(item.id_cobranza)" title="Eliminar permanentemente">
+                                    <i class="bi bi-trash-fill" style="font-size: 0.75rem;"></i>
+                                    <span class="small fw-bold">DESTRUIR</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="basureroAgrupado.length === 0">
+                        <td colspan="13" class="text-center py-5 text-muted">
+                            <i class="bi bi-trash fs-3 d-block mb-2 opacity-50"></i>
+                            La papelera está vacía.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

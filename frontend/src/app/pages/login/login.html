@@ -1,0 +1,18 @@
+<div class="login-container">
+    <div class="login-card">
+        <h2>Sistema de Cobranzas</h2>
+        <p>Bienvenido al sistema de cobranzas</p>
+        <div *ngIf="error" class="error-msg">{{ error }}</div>
+        <div class="campo">
+            <label>USUARIO</label>
+            <input type="text" [(ngModel)]="nombreUsuario" placeholder="Ingrese su usuario">
+        </div>
+        <div class="campo">
+            <label>CONTRASEÑA</label>
+            <input type="password" [(ngModel)]="password" placeholder="Ingrese su contraseña">
+        </div>
+        <button (click)="iniciarSesion()" [disabled]="cargando">
+            {{cargando ? 'Iniciando sesión...' : 'Iniciar sesión'}}
+        </button>
+    </div>
+</div>

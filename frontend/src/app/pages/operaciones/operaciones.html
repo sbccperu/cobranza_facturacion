@@ -1,0 +1,211 @@
+<div class="directorio-container p-4" style="width: 100%;">
+
+  <!-- HEADER -->
+  <div class="card shadow-sm p-3 mb-4 border-0 border-start border-5 border-primary">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <h2 class="mb-0 fw-bold text-primary">
+          <i class="bi bi-people-fill"></i> Directorio de Clientes
+        </h2>
+        <small class="text-muted">Gestiona los clientes y pásalos a cobranzas activas</small>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Selector de Periodo -->
+        <label class="fw-bold text-muted small text-nowrap mb-0">PERIODO:</label>
+        <select class="form-select form-select-sm" style="min-width: 160px;"
+                [(ngModel)]="idPeriodoSeleccionado" (change)="onCambiarPeriodo()">
+          <option *ngFor="let p of periodos" [value]="p.id_periodo">
+            {{ p.descripcion || 'Periodo ' + p.id_periodo }}
+          </option>
+        </select>
+
+        <!-- Buscador -->
+        <div class="input-group input-group-sm" style="width: 200px;">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" placeholder="Buscar..." [(ngModel)]="terminoBusqueda">
+        </div>
+
+        <!-- Examinar CSV -->
+        <label class="btn btn-sm btn-outline-info fw-bold mb-0">
+          <i class="bi bi-file-earmark-spreadsheet"></i> Examinar solo clientes nuevos
+          <input type="file" hidden accept=".csv" (change)="examinarCSV($event)">
+        </label>
+
+        <!-- Pasar todos -->
+        <button class="btn btn-sm btn-success fw-bold" (click)="pasarTodos()" [disabled]="cargando || clientes.length === 0">
+          <i class="bi bi-send-fill"></i> Pasar Todos a Cobranzas
+        </button>
+
+        <!-- Actualizar -->
+        <button class="btn btn-sm btn-outline-secondary fw-bold" (click)="cargarDirectorio()" [disabled]="cargando">
+          RECARGAR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div *ngIf="cargando" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2 text-muted">Cargando directorio...</p>
+  </div>
+
+  <!-- TABLA DIRECTORIO -->
+  <div class="card shadow-sm border-0" *ngIf="!cargando">
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle mb-0" style="font-size: 0.87rem;">
+        <thead class="bg-primary text-white text-center text-uppercase" style="font-size: 0.78rem; letter-spacing: 0.4px;">
+          <tr>
+            <th class="py-3 px-2" style="width: 45px;">Nro</th>
+            <th style="width: 100px;">Estado</th>
+            <th style="min-width: 160px;">Nombre del Cliente</th>
+            <th style="min-width: 130px;">Teléfono</th>
+            <th style="min-width: 130px;">RUC(s)</th>
+            <th style="min-width: 170px;">Razón Social</th>
+            <th style="width: 140px;">Periodo</th>
+            <th style="width: 130px;">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cliente of clientesPaginados; let i = index"
+              [style.background-color]="cliente.colorGrupo || 'transparent'">
+
+            <td class="text-center text-muted fw-bold" [style.background-color]="cliente.colorGrupo">
+              {{ (paginaActual - 1) * itemsPorPagina + i + 1 }}
+            </td>
+
+            <!-- Estado -->
+            <td class="text-center" [style.background-color]="cliente.colorGrupo">
+              <span class="badge" [ngClass]="cliente.estado === 'activo' ? 'bg-success' : 'bg-warning text-dark'">
+                {{ (cliente.estado || 'activo') | uppercase }}
+              </span>
+            </td>
+
+            <!-- Nombre -->
+            <td class="fw-bold px-2" [style.background-color]="cliente.colorGrupo">
+              <span *ngIf="!cliente.editando">{{ cliente.nombre }}</span>
+              <input *ngIf="cliente.editando" type="text" class="form-control form-control-sm"
+                     [(ngModel)]="cliente.nombre">
+            </td>
+
+            <!-- Teléfono: UNA SOLA CELDA POR GRUPO -->
+            <td *ngIf="cliente.isFirstOfTelGroup" [attr.rowspan]="cliente.telGroupRows"
+                class="text-center font-monospace align-middle fw-bold" [style.background-color]="cliente.colorGrupo">
+              <span *ngIf="!cliente.editando">{{ cliente.telefono || '—' }}</span>
+              <input *ngIf="cliente.editando" type="text" class="form-control form-control-sm text-center"
+                     [(ngModel)]="cliente.telefono" placeholder="Ej: 999888777">
+            </td>
+
+            <!-- RUC -->
+            <td class="text-center small font-monospace" [style.background-color]="cliente.colorGrupo">
+              {{ cliente.rucs || '—' }}
+            </td>
+
+            <!-- Razón Social -->
+            <td class="small text-muted" [style.background-color]="cliente.colorGrupo">
+              {{ cliente.razones_sociales || '—' }}
+            </td>
+
+            <!-- Periodo -->
+            <td class="text-center" [style.background-color]="cliente.colorGrupo">
+              <span class="small fw-bold px-2 py-1 border border-secondary-subtle text-dark rounded w-100 d-block">
+                {{ periodoNombre }}
+                <i *ngIf="cliente.ya_en_cobranza" class="bi bi-check-circle-fill text-success ms-1"></i>
+              </span>
+            </td>
+
+            <!-- Acciones -->
+            <td class="text-center" [style.background-color]="cliente.colorGrupo">
+              <div *ngIf="!cliente.editando" class="d-flex justify-content-center gap-1">
+                <button class="btn btn-sm btn-info text-white fw-bold py-1 px-2" (click)="habilitarEdicion(cliente)" style="font-size: 0.65rem;">
+                  EDITAR
+                </button>
+                <button *ngIf="!cliente.ya_en_cobranza && idPeriodoSeleccionado" 
+                        class="btn btn-sm btn-success text-white fw-bold py-1 px-2 shadow-sm" 
+                        (click)="pasarIndividual(cliente)" 
+                        style="font-size: 0.65rem;">
+                  PASAR
+                </button>
+              </div>
+              <div *ngIf="cliente.editando" class="d-flex justify-content-center gap-1">
+                <button class="btn btn-sm btn-success fw-bold py-1 px-2" (click)="guardarEdicion(cliente)" style="font-size: 0.7rem;">
+                  GUARDAR
+                </button>
+                <button class="btn btn-sm btn-danger fw-bold py-1 px-2" (click)="cancelarEdicion(cliente)" style="font-size: 0.7rem;">
+                  X
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="clientesFiltrados.length === 0">
+            <td colspan="8" class="text-center py-5 text-muted">
+              No se encontraron clientes registrados.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="d-flex justify-content-between align-items-center px-3 py-2 bg-light border-top">
+      <div class="small text-muted">
+        <strong>{{ clientes.length }}</strong> clientes registrados &nbsp;|&nbsp;
+        <span class="text-success fw-bold">{{ clientesEnCobranza }}</span> generados &nbsp;|&nbsp;
+        <span class="text-warning-emphasis fw-bold">{{ clientes.length - clientesEnCobranza }}</span> pendientes
+      </div>
+      <div class="btn-group" *ngIf="totalPaginas > 1">
+        <button class="btn btn-sm btn-outline-primary" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">‹</button>
+        <button class="btn btn-sm btn-light" disabled>{{ paginaActual }} / {{ totalPaginas }}</button>
+        <button class="btn btn-sm btn-outline-primary" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Clientes Nuevos Detectados -->
+<div class="modal fade show d-block" style="background:rgba(0,0,0,0.55);" *ngIf="mostrarModalNuevo">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title fw-bold text-white">
+          {{ clientesNuevosDetectados.length }} Clientes Nuevos Detectados
+        </h5>
+        <button class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle" style="font-size: 0.85rem;">
+            <thead class="bg-light text-center">
+              <tr>
+                <th style="width:40px;">✓</th>
+                <th>Nombre del Cliente <span class="text-danger">*</span></th>
+                <th>Teléfono</th>
+                <th>RUC(s)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of clientesNuevosDetectados">
+                <td class="text-center">
+                  <input type="checkbox" class="form-check-input" [(ngModel)]="c.guardar">
+                </td>
+                <td>
+                  <input type="text" class="form-control form-control-sm"
+                         [(ngModel)]="c.nombre_cliente" placeholder="Nombre de empresa">
+                </td>
+                <td>
+                  <input type="text" class="form-control form-control-sm text-center"
+                         [(ngModel)]="c.telefono" placeholder="999888777">
+                </td>
+                <td class="text-center small font-monospace">{{ c.detalles ? c.detalles[0]?.ruc : '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary fw-bold" (click)="cerrarModal()">CANCELAR</button>
+        <button class="btn btn-warning fw-bold" (click)="guardarNuevos()">GUARDAR NUEVOS</button>
+      </div>
+    </div>
+  </div>
+</div>

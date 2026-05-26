@@ -1,0 +1,14 @@
+<nav class="navbar" *ngIf="authService.estaLogueado()">
+    <h1>Sistema de Cobranzas</h1>
+    <div class="links">
+        <a routerLink="/usuarios" routerLinkActive="active">Usuarios</a>
+        <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
+        <a routerLink="/operaciones" routerLinkActive="active">Subir Órdenes</a>
+        <a routerLink="/cobranzas" routerLinkActive="active">Cobranzas activas</a>
+        <a routerLink="/historial-pagos" routerLinkActive="active">Historial de Pagos</a>
+        <button (click)="cerrarSesion()">Salir</button>
+    </div>
+</nav>
+<div class="container">
+    <router-outlet></router-outlet>
+</div>

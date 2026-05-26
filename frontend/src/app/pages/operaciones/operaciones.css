@@ -1,0 +1,142 @@
+.carga-container {
+  text-align: center;
+  margin: 40px auto;
+  padding: 30px;
+  border: 2px dashed #0056b3;
+  border-radius: 10px;
+  max-width: 600px;
+  background-color: #f4f7f6;
+  font-family: Arial, sans-serif;
+}
+
+h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+input[type="file"] {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+/* Estilos base eliminados para evitar conflictos con clases de Bootstrap */
+
+
+.agrupado-container {
+  width: 90%;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+}
+
+.cargando-mensaje {
+  text-align: center;
+  font-size: 18px;
+  color: #0056b3;
+  margin: 20px 0;
+  font-weight: bold;
+}
+
+.alerta-desconocidos {
+  width: 90%;
+  margin: 20px auto;
+  padding: 15px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  border-radius: 5px;
+}
+
+.alerta-desconocidos h3 {
+  margin-top: 0;
+}
+
+.cliente-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.cliente-header {
+  background-color: #f8f9fa;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.cliente-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2em;
+}
+
+.total-cliente {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: #28a745;
+}
+
+.cliente-body {
+  padding: 15px;
+}
+
+.tabla-detalles {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-detalles th,
+.tabla-detalles td {
+  padding: 10px;
+  border: 1px solid #eee;
+  text-align: center;
+}
+
+.tabla-detalles th {
+  background-color: #0056b3;
+  color: white;
+  font-size: 0.9em;
+}
+
+.tabla-totales {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.mensaje-amigable-container {
+  margin-top: 30px;
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  text-align: left;
+}
+
+.mensaje-amigable-container h3 {
+  color: #0056b3;
+  margin-top: 0;
+}
+
+.mensaje-textarea {
+  width: 100%;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 14px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  resize: vertical;
+  background-color: #fff;
+}
+
+.btn-copiar {
+  margin-top: 15px;
+  background-color: #0056b3;
+}
+
+.btn-copiar:hover {
+  background-color: #004494;
+}

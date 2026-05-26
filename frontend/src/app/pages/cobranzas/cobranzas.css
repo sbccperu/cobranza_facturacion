@@ -1,0 +1,32 @@
+.group-color-0 { background-color: #bbdefb !important; }
+.group-color-1 { background-color: #c8e6c9 !important; }
+.group-color-2 { background-color: #fff9c4 !important; }
+.group-color-3 { background-color: #f8bbd0 !important; }
+.group-color-4 { background-color: #e1bee7 !important; }
+.group-color-5 { background-color: #b2ebf2 !important; }
+.group-color-6 { background-color: #f0f4c3 !important; }
+.group-color-7 { background-color: #d1c4e9 !important; }
+.group-color-8 { background-color: #ffccbc !important; }
+.group-color-9 { background-color: #b2dfdb !important; }
+
+.group-cell-success {
+    background-color: #06d6a015 !important;
+    border-left: 3px solid #06d6a0 !important;
+    color: #06d6a0 !important;
+}
+
+tr:hover td {
+    filter: brightness(0.95);
+}
+
+/* Ocultar flechas de los input type number */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}

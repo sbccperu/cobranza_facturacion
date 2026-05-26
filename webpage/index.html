@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SB Rest - Software Profesional para la Gestión Integral de Restaurantes.">
+    <title>SB Rest | Software para Restaurantes</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Boxicons (para iconos) -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+
+    <!-- Promo Bar -->
+    <div class="promo-bar" id="promoBar">
+        <div class="container promo-content">
+            <span class="promo-tag">🔥 OFERTA</span>
+            <p><strong>-50% DE DESCUENTO</strong> en la instalación completa + 30 DÍAS GRATIS. Válido por tiempo limitado.</p>
+            <a href="#demo" class="promo-link">Aprovechar oferta <i class='bx bx-right-arrow-alt'></i></a>
+        </div>
+        <button class="promo-close" id="promoClose" aria-label="Cerrar descuento">&times;</button>
+    </div>
+
+    <!-- Navegación Sticky -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <div class="logo">
+                <!-- Por ahora usaremos texto. Cuando pongas tu imagen, descomenta y usa img -->
+                <!-- <img src="images/logo.png" alt="SB Rest Logo"> -->
+                <span class="logo-text"><span class="sb-blue">SB</span> <span class="sb-orange">Rest</span></span>
+            </div>
+            <nav class="nav-links">
+                <a href="#hero">Inicio</a>
+                <a href="#features">Características</a>
+                <a href="#how-it-works">Recomendado</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="#" class="btn btn-outline">Ingresar</a>
+                <a href="#demo" class="btn btn-primary">Solicitar Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <div class="badge">Nuevo sistema en la nube 🚀</div>
+                <h1 class="hero-title">El centro de control de tu <span class="gradient-text">Restaurante</span></h1>
+                <p class="hero-subtitle">
+                    Automatiza ventas, controla tu inventario, gestiona los pedidos en tiempo real y ofrece un servicio al cliente espectacular. Disfruta de la experiencia que llevará tu negocio a otro nivel.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#demo" class="btn btn-primary btn-lg">Solicitar Demo</a>
+                    <a href="#" class="btn btn-secondary btn-lg btn-watch-video"><i class='bx bx-play-circle'></i> Ver el funcionamiento</a>
+                </div>
+            </div>
+            <div class="hero-visual-wrapper">
+                <div class="floating-badge badge-top">
+                    <i class='bx bx-restaurant'></i> Gestión de mesas
+                </div>
+                <div class="thumbnail-backdrop"></div>
+                <div class="video-thumbnail btn-watch-video">
+                    <img src="img/image1.jpg" alt="SB Rest Interface">
+                    <div class="play-btn-overlay">
+                        <i class='bx bx-play'></i>
+                    </div>
+                </div>
+                <div class="floating-badge badge-bottom">
+                    <i class='bx bx-check-circle'></i> Configurado en minutos
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Logo / Confianza (Social Proof) -->
+    <section class="trust-section">
+        <div class="container text-center">
+            <p class="trust-title">Diseñado para la industria gastronómica. Únete a quienes ahorran horas de gestión diarias.</p>
+            <div class="trust-stats">
+                <div class="stat-item">
+                    <h3>99.9%</h3>
+                    <p>Disponibilidad</p>
+                </div>
+                <div class="stat-item">
+                    <h3>+1000</h3>
+                    <p>Mesas Gestionadas</p>
+                </div>
+                <div class="stat-item">
+                    <h3>0 Seg</h3>
+                    <p>Latencia en Pedidos</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bento Grid Features -->
+    <!-- Cómo funciona (Video/Photo Showcase) -->
+    <section id="how-it-works" class="video-showcase-section">
+        <div class="container text-center">
+             <div class="section-header">
+                <h2>Cómo funciona nuestro software</h2>
+                <p>Descubre el poder de SB Rest en acción. Desde la toma de pedidos hasta el cierre de caja, todo centralizado.</p>
+            </div>
+            
+            <!-- Main Video / Photo Player -->
+            <div class="showcase-main">
+                <div class="showcase-main-inner btn-watch-video">
+                    <!-- Placeholder cover image -->
+                    <img src="img/image1.jpg" alt="Video Principal SB Rest" class="showcase-cover" id="mainShowcaseImg">
+                    <div class="showcase-play-btn">
+                        <i class='bx bx-play'></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thumbnail Carousel/Gallery -->
+            <div class="showcase-gallery">
+                <button class="gallery-nav-btn prev"><i class='bx bx-chevron-left'></i></button>
+                <div class="gallery-tracks">
+                    <img src="img/image1.jpg" alt="Pantalla Principal" class="gallery-thumb active">
+                    <img src="img/image2.png" alt="Panel Ventas" class="gallery-thumb">
+                    <img src="img/image3.png" alt="Panel Compras" class="gallery-thumb">
+                    <img src="img/image4.png" alt="Control Stock" class="gallery-thumb">
+                    <img src="img/image5.png" alt="Cierres Gastos" class="gallery-thumb">
+                </div>
+                <button class="gallery-nav-btn next"><i class='bx bx-chevron-right'></i></button>
+            </div>
+
+            <a href="#demo" class="btn btn-primary mt-4" style="padding: 12px 30px; font-size: 1.1rem; border-radius: 99px;">Agendar Demostración <i class='bx bx-right-arrow-alt'></i></a>
+        </div>
+    </section>
+
+    <!-- Z-Pattern Features -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Funciones creadas para escalar</h2>
+                <p>Todo el potencial y herramientas avanzadas agrupadas en una interfaz simple e intuitiva.</p>
+            </div>
+
+            <div class="z-features-container">
+                
+                <!-- Z-Feature Row 1 -->
+                <div class="z-feature-row fade-in-up">
+                    <div class="z-feature-image">
+                        <img src="img/image2.png" alt="Módulo de Ventas y Caja">
+                    </div>
+                    <div class="z-feature-text">
+                        <span class="z-kicker">ATENCIÓN VELOZ</span>
+                        <h3>Módulo de Ventas y Caja</h3>
+                        <p>Control total con apertura y cierre de caja. Toma de pedidos versátil y mapeo interactivo de todas tus mesas en tiempo real.</p>
+                        <ul class="z-feature-list">
+                            <li><i class='bx bx-check-circle'></i> Apertura y toma de pedidos al instante</li>
+                            <li><i class='bx bx-check-circle'></i> Gestión para mesas, llevar y delivery</li>
+                            <li><i class='bx bx-check-circle'></i> Visualización interactiva en tiempo real</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Z-Feature Row 2 -->
+                <div class="z-feature-row z-reverse fade-in-up">
+                    <div class="z-feature-image">
+                        <img src="img/image3.png" alt="Módulo de Compras">
+                    </div>
+                    <div class="z-feature-text">
+                        <span class="z-kicker">GESTIÓN EFICIENTE</span>
+                        <h3>Módulo de Compras</h3>
+                        <p>Gestión completa para la creación de proveedores e ingreso de compras ágil y sin complicaciones.</p>
+                        <ul class="z-feature-list">
+                            <li><i class='bx bx-check-circle'></i> Registro detallado de proveedores</li>
+                            <li><i class='bx bx-check-circle'></i> Automatización y registro de facturas</li>
+                            <li><i class='bx bx-check-circle'></i> Sincronización directa con el inventario</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Z-Feature Row 3 -->
+                <div class="z-feature-row fade-in-up">
+                    <div class="z-feature-image">
+                        <img src="img/image4.png" alt="Control de Stock">
+                    </div>
+                    <div class="z-feature-text">
+                        <span class="z-kicker">INVENTARIO EXACTO</span>
+                        <h3>Control de Stock</h3>
+                        <p>Mantén el inventario bajo control continuo con reportes detallados de stock actual y reportes de costos de producción.</p>
+                        <ul class="z-feature-list">
+                            <li><i class='bx bx-check-circle'></i> Kardex valorizado en tiempo real</li>
+                            <li><i class='bx bx-check-circle'></i> Alertas preventivas de stock mínimo</li>
+                            <li><i class='bx bx-check-circle'></i> Costeo por recetas y productos</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                 <!-- Z-Feature Row 4 -->
+                 <div class="z-feature-row z-reverse fade-in-up">
+                    <div class="z-feature-image">
+                        <img src="img/image5.png" alt="Gastos y Cierre de Operaciones">
+                    </div>
+                    <div class="z-feature-text">
+                        <span class="z-kicker">FINANZAS SANAS</span>
+                        <h3>Gastos y Cierre de Operaciones</h3>
+                        <p>Registra todos y cada uno de los gastos del día. Realiza cierres de caja parciales y el cierre de caja total para una salud financiera perfecta.</p>
+                        <ul class="z-feature-list">
+                            <li><i class='bx bx-check-circle'></i> Auditoría detallada de caja chica</li>
+                            <li><i class='bx bx-check-circle'></i> Control de retiros y depósitos</li>
+                            <li><i class='bx bx-check-circle'></i> Flujo de caja dinámico</li>
+                        </ul>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- Solicitar Demo Form Section -->
+    <section class="demo-section fade-in-up" id="demo">
+        <div class="container">
+            <div class="demo-container">
+                <div class="demo-text">
+                    <h2>Solicita tu <span>Demostración</span> Gratuita</h2>
+                    <p>Déjanos tus datos y un experto de SB Rest se pondrá en contacto contigo muy pronto para mostrarte cómo llevar la gestión de tu restaurante al siguiente nivel.</p>
+                    <ul class="demo-benefits">
+                        <li><i class='bx bx-check-circle'></i> Asesoría completamente personalizada.</li>
+                        <li><i class='bx bx-check-circle'></i> Orientación sobre instalación de equipos.</li>
+                        <li><i class='bx bx-check-circle'></i> Atención rápida vía WhatsApp o llamada.</li>
+                    </ul>
+                </div>
+                <div class="demo-form-wrapper">
+                    <form action="#" class="demo-form" id="demoForm">
+                        <div class="form-group">
+                            <label for="name">Nombre / Apellido *</label>
+                            <input type="text" id="name" placeholder="Ej. Juan Pérez" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="restaurant">Nombre del Restaurante *</label>
+                            <input type="text" id="restaurant" placeholder="Ej. El Buen Sabor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Teléfono / WhatsApp *</label>
+                            <input type="tel" id="phone" placeholder="+51 900 000 000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Correo Electrónico (Opcional)</label>
+                            <input type="email" id="email" placeholder="correo@ejemplo.com">
+                        </div>
+                        <div class="form-group captcha-group">
+                            <label for="captchaInput" id="captchaQuestion">Cargando verificación...</label>
+                            <input type="number" id="captchaInput" placeholder="Ingresa el resultado" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary submit-btn" style="width:100%; margin-top:0.5rem;">Solicitar mi Demostración</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer CTA & Footer -->
+    <footer class="footer">
+        <div class="container footer-cta text-center">
+            <h2>¿Listo para revolucionar tu restaurante?</h2>
+            <p>Empieza a utilizar SB Rest hoy y comprueba los resultados por ti mismo.</p>
+            <a href="#" class="btn btn-primary btn-lg mt-4">Unirse a SB Rest</a>
+        </div>
+        <div class="container footer-content border-t">
+            <div class="footer-left">
+                <div class="logo">
+                     <span class="logo-text"><span class="sb-blue">SB</span> <span class="sb-orange">Rest</span></span>
+                </div>
+                <p class="brand-desc mt-2">Tecnología de primer nivel al alcance de todo negocio gastronómico.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-col">
+                    <h4>Producto</h4>
+                    <a href="#">POS</a>
+                    <a href="#">Inventarios</a>
+                    <a href="#">Precios</a>
+                </div>
+                <div class="link-col">
+                    <h4>Compañía</h4>
+                    <a href="#">Sobre nosotros</a>
+                    <a href="#">Contacto</a>
+                    <a href="#">Términos</a>
+                </div>
+            </div>
+        </div>
+        <div class="container text-center footer-bottom">
+            <p>&copy; 2026 SB Rest. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="closeModalBtn" class="close-btn">&times;</button>
+            <div class="video-container">
+                <!-- Se inyecta el src por javascript para detener el video al cerrar -->
+                <iframe id="videoIframe" src="" title="Vimeo video player" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Widget -->
+    <div class="whatsapp-widget">
+        <!-- Chat Window -->
+        <div class="wa-chat-window" id="wa-chat-window">
+            <div class="wa-header">
+                <div class="wa-header-info">
+                    <i class='bx bxl-whatsapp'></i>
+                    <div>
+                        <h4>SB Rest</h4>
+                        <p>Generalmente responde en unos minutos</p>
+                    </div>
+                </div>
+                <button class="wa-close-btn" id="wa-close-btn">&times;</button>
+            </div>
+            <div class="wa-body">
+                <div class="wa-message">
+                    <p class="wa-message-sender">Soporte SB Rest</p>
+                    <p>¡Hola! 👋 ¿En qué podemos ayudarte o qué duda tienes sobre nuestro software para restaurantes?</p>
+                    <span class="wa-time">Ahora</span>
+                </div>
+            </div>
+            <div class="wa-footer">
+                <a href="https://wa.me/51915137567?text=Hola,%20me%20interesa%20iniciar%20con%20el%20sistema%20SB%20Rest" target="_blank" class="wa-start-btn">
+                    <i class='bx bxl-whatsapp'></i> Iniciar Chat
+                </a>
+            </div>
+        </div>
+
+        <!-- Float Button -->
+        <button class="whatsapp-float" id="wa-float-btn" aria-label="Abrir WhatsApp">
+            <i class='bx bxl-whatsapp'></i>
+        </button>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<div class="carga-container">
+    <h2>Gestión de Usuarios <span class="badge bg-secondary fs-6">{{usuarios.length}}</span></h2>
+    <div class="d-flex gap-2 mb-3">
+        <button (click)="verActivos()" [class.active]="!verBasurero">Activos</button>
+        <button (click)="verPapelera()" [class.active]="verBasurero">Papelera</button>
+    </div>
+</div>
+<table>
+    <tr>
+        <th>N°</th>
+        <th>Usuario</th>
+        <th>Nombre Completo</th>
+        <th>Correo</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+    <tr *ngFor="let usuario of usuarios; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ usuario.nombre_usuario }}</td>
+        <td>{{ usuario.nombre_completo }}</td>
+        <td>{{ usuario.correo }}</td>
+        <td>
+            <span [class]="usuario.estado">{{ usuario.estado | uppercase }}</span>
+        </td>
+        <td *ngIf="!verBasurero">
+            <button (click)="abrirEditar(usuario)">Editar</button>
+            <button (click)="cambiarEstado(usuario.id, 'inactivo')"
+                *ngIf="usuario.estado === 'activo'">Inactivar</button>
+            <button (click)="cambiarEstado(usuario.id, 'activo')" *ngIf="usuario.estado === 'inactivo'">Activar</button>
+            <button (click)="cambiarEstado(usuario.id, 'eliminado')">Eliminar</button>
+        </td>
+        <td *ngIf="verBasurero">
+            <button (click)="cambiarEstado(usuario.id, 'activo')">Restaurar</button>
+            <button (click)="destruir(usuario.id)">Destruir</button>
+        </td>
+    </tr>
+</table>
+<div *ngIf="editando" class="modal-editar">
+    <div class="modal-content">
+        <h3>Editar Usuario</h3>
+        <div class="campo">
+            <label>Nombre de usuario:</label>
+            <input [(ngModel)]="usuarioEditando.nombre_usuario">
+        </div>
+        <div class="campo">
+            <label>Nombre completo:</label>
+            <input [(ngModel)]="usuarioEditando.nombre_completo">
+        </div>
+        <div class="campo">
+            <label>Correo:</label>
+            <input [(ngModel)]="usuarioEditando.correo">
+        </div>
+        <div class="campo">
+            <label>Nueva contraseña (dejar vacío si no cambia):</label>
+            <input type="password" [(ngModel)]="usuarioEditando.password" placeholder="••••••">
+        </div>
+        <button (click)="guardarEdicion()">Guardar</button>
+        <button (click)="editando = false">Cancelar</button>
+    </div>
+</div>

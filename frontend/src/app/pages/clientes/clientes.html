@@ -1,0 +1,202 @@
+<div class="container mt-4">
+    <h2>Directorio de Clientes <span class="badge bg-secondary fs-6">{{clientes.length}}</span></h2>
+    <p>Organiza tus empresas, teléfonos y RUCs asociados aquí.</p>
+
+    <!-- ZONA PARA EL FORMULARIO (Agrega aquí tus inputs) -->
+    <div class="card p-3 mb-4 mt-4">
+        <h4>Agregar Nuevo Cliente</h4>
+        <div class="form-group mb-2">
+            <label>Nombre de Empresa Madre:</label>
+            <input type="text" class="form-control" [(ngModel)]="nuevoNombre" placeholder="Ej. GRUPO EMPRESARIAL XYZ">
+        </div>
+
+        <div class="form-group mb-2">
+            <label>Teléfono de WhatsApp:</label>
+            <input type="text" class="form-control" [(ngModel)]="nuevoTelefono" placeholder="Ej. 999888777">
+        </div>
+
+        <div class="form-group mb-3">
+            <label>RUC (Opcional por ahora):</label>
+            <input type="text" class="form-control" [(ngModel)]="nuevoRuc" placeholder="Ej. 20123456789">
+        </div>
+
+        <div>
+            <button class="btn btn-primary" (click)="guardarCliente()">Guardar Mantenimiento</button>
+        </div>
+    </div>
+
+    <div class="card p-3 mt-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center">
+                <h4 class="mb-0">{{ vistaActual === 'activos' ? 'Directorio Activo' : 'Basurero de Clientes' }} 
+                    <span class="badge bg-primary fs-6">{{clientes.length}}</span>
+                </h4>
+                <button *ngIf="seleccionados.length > 0 && vistaActual === 'basurero'" 
+                        class="btn btn-danger btn-sm ms-3 fw-bold shadow-sm px-3 rounded-pill" (click)="destruirMasivo()">
+                    <i class="bi bi-trash-fill me-1"></i> DESTRUIR SELECCIONADOS ({{ seleccionados.length }})
+                </button>
+            </div>
+            <div class="w-50 mx-4">
+                <input type="text" class="form-control" placeholder="🔍 Buscar por nombre, teléfono o RUC..."
+                    [(ngModel)]="terminoBusqueda">
+            </div>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn fw-bold"
+                    [ngClass]="vistaActual === 'activos' ? 'btn-primary' : 'btn-outline-primary'"
+                    (click)="cambiarVista('activos')">
+                    Activos
+                </button>
+                <button type="button" class="btn fw-bold"
+                    [ngClass]="vistaActual === 'basurero' ? 'btn-dark' : 'btn-outline-dark'"
+                    (click)="cambiarVista('basurero')">
+                    Papelera
+                </button>
+            </div>
+        </div>
+
+        <table class="table table-striped mt-2 align-middle">
+            <thead class="bg-primary text-white" [ngClass]="{'bg-dark': vistaActual === 'basurero'}">
+                <tr>
+                    <th style="width: 40px;" class="text-center">
+                        <input type="checkbox" class="form-check-input" [checked]="todosSeleccionados" (change)="toggleTodos()">
+                    </th>
+                    <th style="width: 50px;">N°</th>
+                    <th>Nombre Comercial</th>
+                    <th>Estado</th>
+                    <th>Numero de telefono</th>
+                    <th>RUCs Asociados</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let cliente of clientesPaginados; let i = index"
+                    [style.background-color]="cliente.colorFila"
+                    [ngClass]="{'table-danger': cliente.estado_cliente === 'eliminado', 'table-secondary': cliente.estado_cliente === 'inactivo', 'border-bottom': cliente.telGroupRows > 1 || !cliente.colorFila}"
+                    [class.table-light]="seleccionados.includes(cliente.id_cliente)">
+                    <td class="text-center" style="background-color: transparent !important;">
+                        <input type="checkbox" class="form-check-input" 
+                               [checked]="seleccionados.includes(cliente.id_cliente)"
+                               (change)="toggleSeleccion(cliente.id_cliente)">
+                    </td>
+                    <td style="background-color: transparent !important;">{{ (paginaActual - 1) * itemsPorPagina + i + 1 }}</td>
+                    <td style="background-color: transparent !important;">
+                        <strong>{{ cliente.nombre_cliente }}</strong>
+                    </td>
+                    <td style="background-color: transparent !important;">
+                        <span *ngIf="cliente.estado_cliente === 'activo' || !cliente.estado_cliente"
+                            class="badge bg-success">Activo</span>
+                        <span *ngIf="cliente.estado_cliente === 'inactivo'" class="badge bg-secondary">Inactivo</span>
+                        <span *ngIf="cliente.estado_cliente === 'eliminado'" class="badge bg-danger">Eliminado</span>
+                    </td>
+                    <td *ngIf="cliente.isFirstOfTelGroup" [attr.rowspan]="cliente.telGroupRows" class="align-middle text-center"
+                        [style.background-color]="cliente.colorFila ? cliente.colorFila : '#fff'"
+                        style="border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6;">
+                        <span *ngIf="cliente.telefonoVisual" class="badge border text-dark shadow-sm px-3 rounded-pill bg-white">
+                            <span *ngIf="cliente.telGroupRows > 1" title="Contacto compartido">🔗</span>
+                            {{ cliente.telefonoVisual }}
+                        </span>
+                        <span *ngIf="!cliente.telefonoVisual" class="text-muted"><small>Sin teléfono</small></span>
+                    </td>
+                    <td style="background-color: transparent !important;">
+                        <ng-container *ngIf="cliente.listaRucs?.length > 0; else sinRuc">
+                            <div *ngFor="let ruc of cliente.listaRucs" class="mb-1">
+                                <span class="badge border text-dark text-wrap text-start bg-white shadow-sm" style="max-width: 250px;">
+                                    🏢 {{ ruc.texto }}
+                                </span>
+                            </div>
+                        </ng-container>
+                        <ng-template #sinRuc><span class="text-muted"><small>Sin RUC</small></span></ng-template>
+                    </td>
+                    <td class="text-center" style="background-color: transparent !important;">
+                        <div class="btn-group gap-1">
+                            <ng-container *ngIf="vistaActual === 'activos'">
+                                <ng-container *ngIf="cliente.estado_cliente === 'activo' || !cliente.estado_cliente">
+                                    <button class="btn btn-sm btn-info text-white rounded shadow-sm"
+                                        (click)="editarCliente(cliente)">Editar</button>
+                                    <button class="btn btn-sm btn-warning text-dark rounded shadow-sm"
+                                        (click)="inactivarCliente(cliente.id_cliente)">Inactivar</button>
+                                    <button class="btn btn-sm btn-danger rounded shadow-sm"
+                                        (click)="eliminarCliente(cliente.id_cliente)">Eliminar</button>
+                                </ng-container>
+                                <ng-container *ngIf="cliente.estado_cliente === 'inactivo'">
+                                    <button class="btn btn-sm btn-success text-white rounded shadow-sm"
+                                        (click)="restaurarCliente(cliente.id_cliente)">Activar</button>
+                                    <button class="btn btn-sm btn-danger rounded shadow-sm"
+                                        (click)="eliminarCliente(cliente.id_cliente)">Eliminar</button>
+                                </ng-container>
+                            </ng-container>
+    
+                            <ng-container *ngIf="vistaActual === 'basurero'">
+                                <button class="btn btn-sm btn-success text-white rounded shadow-sm"
+                                    (click)="restaurarCliente(cliente.id_cliente)">Restaurar Local</button>
+                                <button class="btn btn-sm btn-dark rounded shadow-sm"
+                                    (click)="eliminarClienteDefinitivo(cliente.id_cliente)">Destruir</button>
+                            </ng-container>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr *ngIf="clientes.length === 0">
+                    <td colspan="5" class="text-center text-muted">Aún no has cargado clientes o no hay datos.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Controles de Paginación -->
+        <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="clientes.length > 0">
+            <nav>
+                <ul class="pagination mb-0">
+                    <li class="page-item" [class.disabled]="paginaActual === 1">
+                        <button class="page-link" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-link text-dark bg-light px-3 fw-bold">Página {{ paginaActual }} de {{
+                            totalPaginas }}</span>
+                    </li>
+                    <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
+                        <button class="page-link" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edición de Cliente -->
+<div class="modal fade" id="editarClienteModal" tabindex="-1" aria-labelledby="editarClienteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editarClienteModalLabel">Editar Cliente</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nombre del Cliente</label>
+                    <input type="text" class="form-control" [(ngModel)]="modalClienteNombre">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Teléfonos</label>
+                    <textarea class="form-control" rows="2" [(ngModel)]="modalClienteTelefonos"
+                        placeholder="Ej: 999111222, 999333444"></textarea>
+                    <div class="form-text">Separa múltiples teléfonos usando comas.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">RUCs</label>
+                    <textarea class="form-control" rows="2" [(ngModel)]="modalClienteRucs"
+                        placeholder="Ej: 20123456789, 10123456789"></textarea>
+                    <div class="form-text">Separa múltiples RUCs usando comas.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" (click)="actualizarClienteModal()">Guardar
+                    Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>

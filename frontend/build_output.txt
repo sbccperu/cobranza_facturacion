@@ -1,0 +1,12 @@
+[33m❯[39m Building...
+[32m✔[39m Building...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m [1mRaw size[22m[2m | [22m[1mEstimated transfer size[22m
+[32mmain-B4NI26MA.js[39m   [2m | [22m[2mmain[22m         [2m | [22m[36m314.63 kB[39m[2m | [22m               [36m86.66 kB[39m
+[32mstyles-6GH5B3JP.css[39m[2m | [22m[2mstyles[22m       [2m | [22m[36m136 bytes[39m[2m | [22m              [36m136 bytes[39m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m[2m | [22m[1m314.77 kB[22m[2m | [22m               [1m86.80 kB[22m
+
+Application bundle generation complete. [2.841 seconds] - 2026-03-06T22:26:39.188Z
+
+Output location: C:\Users\Usuario\Downloads\Proyecto_Cobranza\Proyecto_Cobranza\Proyecto_Cobranza\frontend\dist\frontend
+

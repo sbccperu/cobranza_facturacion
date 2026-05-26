@@ -1,0 +1,280 @@
+<div class="card shadow-sm p-4 mt-4 mx-auto" style="width: 98%; max-width: 100%;">
+    <!-- Fila 1: Título y Totales -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0 fw-bold text-dark">
+            <i class="bi bi-grid-3x3-gap-fill"
+                [ngClass]="vistaActual === 'activas' ? 'text-primary' : 'text-secondary'"></i>
+            Dashboard de Cobranzas {{ vistaActual === 'activas' ? 'Activas' : 'Inactivas' }}
+        </h2>
+
+        <div class="d-flex gap-4 text-end">
+            <div class="px-3 border-end">
+                <div class="text-muted small text-uppercase fw-semibold" style="font-size: 0.7rem;">Suma Pendiente</div>
+                <div class="text-danger fw-bold fs-4">S/ {{ sumaTotalCobranzas | number:'1.0-0' }}</div>
+            </div>
+            <div class="px-2">
+                <div class="text-muted small text-uppercase fw-semibold" style="font-size: 0.7rem;">Registros</div>
+                <div class="fw-bold fs-4 text-dark">{{ cobranzasFiltradas.length }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fila 2: Buscador y Acciones -->
+    <div class="d-flex justify-content-between align-items-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="input-group shadow-sm" style="max-width: 400px;">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-start-0 ps-1" placeholder="Buscar cobranza..."
+                    [(ngModel)]="terminoBusquedaDashboard">
+            </div>
+            <div class="btn-group shadow-sm" role="group">
+                <button type="button" class="btn fw-bold"
+                    [ngClass]="vistaActual === 'activas' ? 'btn-primary' : 'btn-outline-primary'"
+                    (click)="cambiarVista('activas')">
+                    Activas
+                </button>
+                <button type="button" class="btn fw-bold"
+                    [ngClass]="vistaActual === 'inactivas' ? 'btn-secondary' : 'btn-outline-secondary'"
+                    (click)="cambiarVista('inactivas')">
+                    Inactivas
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap justify-content-end">
+            <button *ngIf="vistaActual === 'activas'" class="btn btn-warning btn-sm fw-bold shadow-sm px-3"
+                [disabled]="selecciones.size === 0" (click)="notificarRetrasoSeleccionados()">
+                <i class="bi bi-whatsapp"></i> Avisar ({{selecciones.size}})
+            </button>
+            <button *ngIf="vistaActual === 'inactivas'" class="btn btn-warning btn-sm fw-bold shadow-sm px-3"
+                [disabled]="selecciones.size === 0" (click)="notificarSuspensionSeleccionados()">
+                <i class="bi bi-whatsapp"></i> Avisar Suspensión ({{selecciones.size}})
+            </button>
+            <button *ngIf="vistaActual === 'activas'" class="btn btn-secondary btn-sm fw-bold shadow-sm px-3"
+                [disabled]="selecciones.size === 0" (click)="pasarAInactivos()">
+                <i class="bi bi-archive-fill"></i> Inactivar ({{selecciones.size}})
+            </button>
+            <button *ngIf="vistaActual === 'inactivas'" class="btn btn-primary btn-sm fw-bold shadow-sm px-3"
+                [disabled]="selecciones.size === 0" (click)="pasarAActivos()">
+                <i class="bi bi-arrow-up-circle-fill"></i> Reactivar ({{selecciones.size}})
+            </button>
+            <button class="btn btn-success btn-sm fw-bold shadow-sm px-3" [disabled]="selecciones.size === 0"
+                (click)="marcarSeleccionadosComoPagados()">
+                <i class="bi bi-cash-stack"></i> Pagar seleccionados ({{selecciones.size}})
+            </button>
+            <button class="btn btn-danger btn-sm fw-bold shadow-sm px-3" [disabled]="selecciones.size === 0"
+                (click)="descartarSeleccionados()">
+                <i class="bi bi-trash-fill"></i> Descartar ({{selecciones.size}})
+            </button>
+            <button class="btn btn-outline-primary btn-sm fw-bold px-3" (click)="cargarCobranzas()">
+                <i class="bi bi-arrow-clockwise"></i> Recargar
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle table-hover" style="font-size: 0.85rem;">
+            <thead class="bg-primary text-white text-center align-middle">
+                <tr>
+                    <th class="text-center" style="width: 40px;">
+                        <input type="checkbox" class="form-check-input" (change)="seleccionarTodos($event)"
+                            [checked]="selecciones.size > 0 && selecciones.size === cobranzasFiltradas.length">
+                    </th>
+                    <th class="text-nowrap px-2">Orden N°</th>
+                    <th class="text-nowrap px-2">Est. Cliente</th>
+                    <th style="min-width: 150px;">Nombre de Empresa / Cliente</th>
+                    <th class="text-nowrap px-2">RUC(s) Asociado(s)</th>
+                    <th class="text-nowrap px-2">Celular(es)</th>
+                    <th class="text-nowrap px-2">Comprobantes</th>
+                    <th class="text-nowrap px-2">Monto a Cobrar</th>
+                    <th class="text-nowrap px-2 bg-success bg-opacity-75">Suma Grupo</th>
+                    <th class="text-nowrap px-2">Periodo</th>
+                    <th class="text-nowrap px-2">Operador</th>
+                    <th class="text-nowrap px-2">Estado</th>
+                    <th class="text-nowrap px-2">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let cobranza of listaVista; let i = index"
+                    [class.table-active]="estaSeleccionado(cobranza.id_cobranza)">
+                    <td class="text-center" [ngClass]="cobranza.colorClass">
+                        <input type="checkbox" class="form-check-input"
+                            [checked]="estaSeleccionado(cobranza.id_cobranza)"
+                            (change)="alternarSeleccion(cobranza.id_cobranza)">
+                    </td>
+                    <td class="text-center fw-bold text-muted" [ngClass]="cobranza.colorClass">{{ (paginaActual - 1) *
+                        itemsPorPagina + i + 1 }}</td>
+                    <td class="text-center" [ngClass]="cobranza.colorClass">
+                        <span class="badge"
+                            [ngClass]="cobranza.estado_cliente === 'activo' ? 'bg-success' : (cobranza.estado_cliente === 'inactivo' ? 'bg-warning text-dark' : 'bg-danger')">
+                            {{(cobranza.estado_cliente || 'desconocido') | uppercase}}
+                        </span>
+                    </td>
+                    <td class="fw-bold" [ngClass]="cobranza.colorClass">{{cobranza.nombre_cliente}}</td>
+                    <td class="text-center" [ngClass]="cobranza.colorClass">{{cobranza.rucs}}</td>
+
+                    <!-- Celular: UNA SOLA CELDA POR GRUPO -->
+                    <td *ngIf="cobranza.isFirstOfPageGroup" [attr.rowspan]="cobranza.pageGroupRows"
+                        class="text-center fw-bold align-middle" [ngClass]="cobranza.colorClass">
+                        {{cobranza.telefonos}}
+                    </td>
+
+                    <td class="text-center fw-bold" [ngClass]="cobranza.colorClass">
+                        {{ cobranza.total_comprobantes || 0 }}
+                    </td>
+                    <td class="text-end fw-bold text-primary px-3" [ngClass]="cobranza.colorClass">S/
+                        {{cobranza.monto_total | number:'1.0-0'}}</td>
+
+                    <!-- TOTAL GRUPO -->
+                    <td *ngIf="cobranza.isFirstOfPageGroup" [attr.rowspan]="cobranza.pageGroupRows"
+                        class="text-center align-middle group-cell-success fw-bold text-success fs-5">
+                        S/ {{cobranza.pageGroupMonto | number:'1.0-0'}}
+                    </td>
+
+                    <td class="text-center small text-muted" [ngClass]="cobranza.colorClass">
+                        <span class="badge bg-light text-dark border">{{cobranza.nombre_periodo || 'Sin
+                            periodo'}}</span>
+                    </td>
+                    <td class="text-center" [ngClass]="cobranza.colorClass">{{cobranza.nombre_operador}}</td>
+
+                    <!-- Estado: UNA SOLA CELDA POR GRUPO -->
+                    <td *ngIf="cobranza.isFirstOfPageGroup" [attr.rowspan]="cobranza.pageGroupRows"
+                        class="text-center align-middle" [ngClass]="cobranza.colorClass">
+                        <span *ngIf="cobranza.grupoPendiente" class="badge bg-warning text-dark shadow-sm">
+                            PENDIENTE
+                        </span>
+                    </td>
+
+                    <!-- Acciones: UNA SOLA CELDA POR GRUPO -->
+                    <td *ngIf="cobranza.isFirstOfPageGroup" [attr.rowspan]="cobranza.pageGroupRows"
+                        class="text-center align-middle" [ngClass]="cobranza.colorClass">
+                        <button
+                            class="btn btn-primary d-flex flex-column align-items-center justify-content-center gap-1 mx-auto shadow"
+                            style="min-width: 110px; padding: 10px;" (click)="abrirModalEdicionGrupo(cobranza)">
+                            <i class="bi bi-pencil-square fs-5"></i>
+                            <span class="small fw-bold">EDITAR COMPROBANTES</span>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="cobranzasFiltradas.length === 0">
+                    <td colspan="13" class="text-center text-muted p-4 fs-5">No hay cobranzas activas registradas.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="d-flex justify-content-between align-items-center mt-4" *ngIf="totalPaginas > 1">
+        <span>{{ ((paginaActual - 1) * itemsPorPagina) + 1 }} - {{ paginaActual * itemsPorPagina >
+            cobranzasFiltradas.length ? cobranzasFiltradas.length : paginaActual * itemsPorPagina }} de {{
+            cobranzasFiltradas.length }}</span>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary fw-bold" [disabled]="paginaActual === 1"
+                (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+            <button class="btn btn-light" disabled>Página {{ paginaActual }} de {{ totalPaginas }}</button>
+            <button class="btn btn-outline-primary fw-bold" [disabled]="paginaActual === totalPaginas"
+                (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Edición de Grupo -->
+<div class="modal fade" [class.show]="mostrarModal" [style.display]="mostrarModal ? 'block' : 'none'" tabindex="-1"
+    style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i class="bi bi-pencil-square fs-4"></i>
+                    Editar Comprobantes - Grupo {{idGrupoEdicion}}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="cerrarModal()"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="alert alert-info d-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    Ingrese comprobantes o use <strong>&lt;500</strong> para asignar S/ 55.00 directo. Luego marque como
+                    <strong>Pendiente</strong>.
+                </div>
+
+                <div class="list-group shadow-sm">
+                    <div *ngFor="let item of itemsGrupo"
+                        class="list-group-item p-3 border-start border-4 mb-2 rounded shadow-sm bg-white"
+                        [style.border-color]="item.colorGrupo || '#ccc'">
+                        <div class="row align-items-center">
+                            <div class="col-md-5">
+                                <h6 class="mb-1 text-dark fw-bold">{{item.nombre_cliente}}</h6>
+                                <p class="mb-0 text-muted d-flex align-items-center mt-1">
+                                    <span>RUC: <span class="fw-bold text-dark font-monospace"
+                                            style="font-size: 1.15rem;">{{item.rucs}}</span></span>
+                                    <button class="btn btn-link p-1 ms-2 d-flex align-items-center"
+                                        (click)="copiarAlPortapapeles(item.rucs)" title="Copiar RUC"
+                                        style="text-decoration: none;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#802a45"
+                                            viewBox="0 0 16 16" style="cursor: pointer;">
+                                            <path
+                                                d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4.5L11.5 1.5H4zM3 2.5h7v3h3V14H3V2.5z" />
+                                            <path
+                                                d="M9.5 0H4a2 2 0 0 0-2 2v1h1V2a1 1 0 0 1 1-1h5.5v2.5A1.5 1.5 0 0 0 11 5h2.5v1h1V4.5L10 0H9.5z" />
+                                        </svg>
+                                    </button>
+                                </p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="small text-muted mb-1">Comprobantes:</label>
+                                <input type="number" class="form-control form-control-sm border-2 text-center"
+                                    [(ngModel)]="item.total_comprobantes" (input)="actualizarComprobantes(item)"
+                                    [disabled]="grupoYaPendiente" min="0">
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <button class="btn btn-sm btn-outline-secondary fw-bold w-100 mt-3"
+                                    (click)="marcarMenos500(item)" [disabled]="grupoYaPendiente"
+                                    title="Asigna S/ 55.00 automáticamente">
+                                    &lt;500
+                                </button>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <label class="small text-muted mb-1">Monto:</label>
+                                <div class="h6 mb-0 text-primary fw-bold">S/ {{item.monto_total | number:'1.0-0'}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen del grupo -->
+                <div class="mt-3 p-3 bg-white rounded shadow-sm d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted small">Teléfono del grupo:</span>
+                        <span class="fw-bold ms-2">{{idGrupoEdicion}}</span>
+                    </div>
+                    <div>
+                        <span class="text-muted small">Total grupo:</span>
+                        <span class="fw-bold text-success ms-2 fs-5">S/ {{sumaGrupoModal | number:'1.0-0'}}</span>
+                    </div>
+                    <div>
+                        <span *ngIf="grupoYaPendiente" class="badge bg-success px-3 py-2 fs-6">
+                            <i class="bi bi-check-circle-fill"></i> GRUPO PENDIENTE
+                        </span>
+                        <button *ngIf="!grupoYaPendiente && hayComprobantesEnGrupo"
+                            class="btn btn-warning fw-bold shadow-sm px-4" (click)="marcarGrupoPendienteConNotificar()">
+                            <i class="bi bi-send-fill me-1"></i> ✓ Poner Grupo Pendiente y Notificar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-outline-secondary px-4 fw-bold"
+                    (click)="cerrarModal()">Cancelar</button>
+                <div class="d-flex gap-2">
+                    <button *ngIf="grupoYaPendiente" type="button" class="btn btn-success px-4 fw-bold shadow-sm"
+                        (click)="marcarGrupoComoPagado()">
+                        <i class="bi bi-cash-stack me-1"></i> MARCAR PAGO (GRUPO)
+                    </button>
+                    <button type="button" class="btn btn-primary px-5 fw-bold shadow" (click)="soloGuardar()">
+                        SÓLO GUARDAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

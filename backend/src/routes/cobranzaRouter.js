@@ -1,0 +1,38 @@
+const express = require('express');
+const router = express.Router();
+const cobranzaController = require('../controller/cobranzaController');
+
+router.post("/registrar", cobranzaController.crearCobranza);
+router.get("/listar", cobranzaController.obtenerCobranza);
+router.get("/listar-inactivas", cobranzaController.obtenerCobranzaInactiva);
+router.get("/directorio", cobranzaController.listarClientesDirectorio);
+router.post("/pasar-todos", cobranzaController.pasarTodosACobranzas);
+router.post("/pasar-uno", cobranzaController.pasarIndividualACobranza);
+router.put("/pagar/:id_cobranza", cobranzaController.marcarComoPagado);
+router.post("/marcar-masivo", cobranzaController.marcarMasivoComoPagado);
+router.put("/comprobantes/:id_cobranza", cobranzaController.actualizarComprobantes);
+router.put("/eliminar/:id_cobranza", cobranzaController.eliminarCobranza);
+router.put("/restaurar/:id_cobranza", cobranzaController.restaurarCobranza);
+router.delete("/destruir/:id_cobranza", cobranzaController.eliminarPermanentementeCobranza);
+router.post("/eliminar-masivo", cobranzaController.eliminarCobranzasMasivo);
+router.post("/destruir-masivo", cobranzaController.destruirCobranzasMasivo);
+router.post("/masivo", cobranzaController.guardarCobranzasMasivas);
+router.get("/pendientes", cobranzaController.obtenerPendientesN8N);
+router.post("/pago-n8n", cobranzaController.registrarPagoN8N);
+router.get("/historial", cobranzaController.obtenerHistorialPagos);
+router.post("/historial/vaciar", cobranzaController.vaciarHistorialMesActual);
+router.post("/previa-masivo", cobranzaController.previaMasivo);
+router.delete("/historial/limpiar", cobranzaController.limpiarHistorialCompleto);
+router.delete("/historial/eliminar/:id_cobranza", cobranzaController.eliminarCobranzaPermanente);
+router.post("/historial/archivar", cobranzaController.archivarHistorial);
+router.get("/lotes", cobranzaController.obtenerReportes);
+router.post("/lotes/eliminar-masivo", cobranzaController.eliminarReportesMasivos);
+router.get("/basurero-actual", cobranzaController.obtenerBasureroActual);
+router.get("/historial-basurero", cobranzaController.obtenerBasureroDetallado);
+router.post("/lotes/enviar-papelera", cobranzaController.enviarLoteAPapelera);
+router.post("/notificar", cobranzaController.notificarCobranza);
+router.post("/notificar-retraso", cobranzaController.notificarRetrasoCobranza);
+router.post("/notificar-suspension", cobranzaController.notificarSuspensionCobranza);
+router.delete("/lotes/:id_reporte", cobranzaController.eliminarReporteDefinitivo);
+
+module.exports = router;
