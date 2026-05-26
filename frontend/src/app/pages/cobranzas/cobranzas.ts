@@ -636,7 +636,7 @@ export class CobranzasComponent implements OnInit {
     doc.text(rangoFechas, 56, 82);
     
     // --- TABLA DETALLADA ---
-    const headers = [['RUC', 'Razón Social / RUC', 'Comprobantes', 'Plan Base (Hasta 500)', 'Excedente (Docs)', 'Costo Excedente', 'Subtotal']];
+    const headers = [['RUC', 'Razón Social', 'Comprobantes', 'Plan Base', 'Exceso (Docs)', 'Costo Exced.', 'Subtotal']];
     
     const body = items.map(item => {
       const docs = parseInt(item.total_comprobantes, 10) || 0;
@@ -661,18 +661,24 @@ export class CobranzasComponent implements OnInit {
       head: headers,
       body: body,
       theme: 'striped',
-      headStyles: { fillColor: azulSBCC, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
-      bodyStyles: { fontSize: 9 },
+      headStyles: { 
+        fillColor: azulSBCC, 
+        textColor: [255, 255, 255], 
+        fontStyle: 'bold', 
+        halign: 'center',
+        valign: 'middle'
+      },
+      bodyStyles: { fontSize: 9, valign: 'middle' },
       columnStyles: {
         0: { halign: 'center', cellWidth: 26 },
-        1: { halign: 'left', cellWidth: 50 },
-        2: { halign: 'center' },
-        3: { halign: 'right' },
-        4: { halign: 'center' },
-        5: { halign: 'right' },
-        6: { halign: 'right', fontStyle: 'bold' }
+        1: { halign: 'left', cellWidth: 46 },
+        2: { halign: 'center', cellWidth: 26 },
+        3: { halign: 'right', cellWidth: 22 },
+        4: { halign: 'center', cellWidth: 22 },
+        5: { halign: 'right', cellWidth: 22 },
+        6: { halign: 'right', cellWidth: 18, fontStyle: 'bold' }
       },
-      styles: { cellPadding: 2.5 }
+      styles: { cellPadding: 2 }
     });
     
     const finalY = (doc as any).lastAutoTable.finalY + 10;
