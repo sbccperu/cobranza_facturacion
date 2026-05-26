@@ -20,6 +20,9 @@ export class CobranzasComponent implements OnInit {
   itemsPorPagina: number = 10;
 
   vistaActual: 'activas' | 'inactivas' = 'activas';
+  
+  mostrarModalPdf = false;
+  itemsGrupoPdf: any[] = [];
 
   constructor(private operacionesService: OperacionesService, private clientesService: ClientesService) { }
 
@@ -740,16 +743,36 @@ export class CobranzasComponent implements OnInit {
     doc.save(nombreArchivo);
   }
 
-  descargarPdfGrupoDirecto(cobranza: any) {
+  abrirModalPdf(cobranza: any) {
     const groupKey = this.getGroupKey(cobranza);
-    const items = this.cobranzasActivas.filter(c => this.getGroupKey(c) === groupKey);
-    this.generarPdfGrupo(items, cobranza.telefonos || 'Sin Registrar', cobranza.nombre_periodo || 'Actual');
+    this.itemsGrupoPdf = this.cobranzasActivas.filter(c => this.getGroupKey(c) === groupKey);
+    this.mostrarModalPdf = true;
+  }
+
+  descargarPdfGrupoDirecto(cobranza: any) {
+    this.abrirModalPdf(cobranza);
   }
 
   descargarPdfGrupoDesdeModal() {
     if (this.itemsGrupo.length === 0) return;
-    const firstItem = this.itemsGrupo[0];
-    this.generarPdfGrupo(this.itemsGrupo, firstItem.telefonos || 'Sin Registrar', firstItem.nombre_periodo || 'Actual');
+    this.itemsGrupoPdf = [...this.itemsGrupo];
+    this.mostrarModalPdf = true;
+  }
+
+  descargarPdfDesdeModalPreview() {
+    if (this.itemsGrupoPdf.length === 0) return;
+    const firstItem = this.itemsGrupoPdf[0];
+    this.generarPdfGrupo(this.itemsGrupoPdf, firstItem.telefonos || 'Sin Registrar', firstItem.nombre_periodo || 'Actual');
+    this.cerrarModalPdf();
+  }
+
+  get sumaGrupoPdfModal(): number {
+    return this.itemsGrupoPdf.reduce((sum, i) => sum + (parseFloat(i.monto_total) || 0), 0);
+  }
+
+  cerrarModalPdf() {
+    this.mostrarModalPdf = false;
+    this.itemsGrupoPdf = [];
   }
 }
 

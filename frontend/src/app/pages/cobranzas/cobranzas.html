@@ -290,3 +290,59 @@
         </div>
     </div>
 </div>
+
+<!-- Modal para Confirmación y Vista Previa de Descarga de PDF -->
+<div class="modal fade" [class.show]="mostrarModalPdf" [style.display]="mostrarModalPdf ? 'block' : 'none'" tabindex="-1"
+    style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-danger text-white py-3">
+                <h5 class="modal-title d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-pdf-fill fs-4"></i>
+                    Confirmar Descarga de PDF - Detalle
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="cerrarModalPdf()"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="text-center mb-3">
+                    <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 4rem;"></i>
+                    <h6 class="mt-2 fw-bold text-dark">¿Deseas descargar el desglose de facturación para este cliente?</h6>
+                    <p class="text-muted small">El PDF detallará de manera formal el cobro del periodo.</p>
+                </div>
+
+                <div class="card p-3 shadow-sm border-0 bg-white mb-2" *ngIf="itemsGrupoPdf.length > 0">
+                    <div class="mb-2">
+                        <span class="text-muted small">Cliente / Empresa:</span>
+                        <div class="fw-bold text-dark">{{ itemsGrupoPdf[0].nombre_cliente }}</div>
+                    </div>
+                    <div class="mb-2" *ngIf="itemsGrupoPdf.length > 1">
+                        <span class="text-muted small">Razones Sociales Vinculadas:</span>
+                        <div class="fw-bold text-dark" style="font-size: 0.8rem;">
+                            <span *ngFor="let item of itemsGrupoPdf; let last = last">
+                                {{ item.nombre_cliente }} (RUC: {{ item.rucs }}){{ !last ? ' / ' : '' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <span class="text-muted small">Periodo:</span>
+                            <div class="fw-bold text-dark">{{ itemsGrupoPdf[0].nombre_periodo || 'Actual' }}</div>
+                        </div>
+                        <div class="col-6 mb-2 text-end">
+                            <span class="text-muted small">Total a Cobrar:</span>
+                            <div class="fw-bold text-success fs-5">
+                                S/ {{ sumaGrupoPdfModal | number:'1.0-0' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white py-3 border-top d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary px-4 fw-bold" (click)="cerrarModalPdf()">Cancelar</button>
+                <button type="button" class="btn btn-danger px-4 fw-bold shadow" (click)="descargarPdfDesdeModalPreview()">
+                    <i class="bi bi-file-earmark-pdf-fill me-1"></i> DESCARGAR PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
